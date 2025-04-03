@@ -3,11 +3,9 @@
 
 [![LOC][loc-shield]][loc-url]
 
-
-
 <!-- LOGO -->
 <div>
-<h3 align="center">JaOS</h3>
+<h1 align="center">JaOS</h1>
 
   <p align="center">
     Hobby operating system, written mainly in C
