@@ -46,6 +46,7 @@ This is completely a hobby project and was not born as a product.
 
 Use QEMU if you want to run the OS in a virtual machine.
 ### Build & Installation
+<a name="installation"></a>
 
 -- To add --
 
