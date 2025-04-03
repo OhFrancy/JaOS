@@ -76,16 +76,10 @@ Don't forget to give the project a star! Thanks again!
 5. Open a Pull Request
 
 -->
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## License
 <a name="license"></a>
 Distributed under the MIT License. `LICENSE` for more info.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
--->
 <!-- MD IMAGES AND LINKS -->
 [loc-shield]: https://tokei.rs/b1/github/maxtyson123/MaxOS?style=for-the-badge
 [loc-url]: https://github.com/maxtyson123/MaxOS
