@@ -1,7 +1,7 @@
 
 <a name="readme-top"></a>
 
-[![LOC][loc-shield]][loc-url]
+[![Lines of Code][loc-tokei-url]][repo-url]
 
 <!-- LOGO -->
 <div>
@@ -36,7 +36,6 @@
 JaOS is a hobby operating system, in really early development, developed using C and ASM. The Operating System is far from being ready to use.
 
 This is completely a hobby project and was not born as a product.
-
 <p align="right">(<a href="#readme-top">top</a>)</p>
 
 ### Requisites for building
@@ -57,6 +56,7 @@ Use QEMU if you want to run the OS in a virtual machine.
 
 - [] Complete Bootloader
 - [] Load Kernel
+
 -- More to add --
 
 <p align="right">(<a href="#readme-top">top</a>)</p>
@@ -83,6 +83,6 @@ Don't forget to give the project a star! Thanks again!
 <a name="license"></a>
 Distributed under the MIT License. `LICENSE` for more info.
 <!-- MD IMAGES AND LINKS -->
-[loc-shield]: https://tokei.rs/b1/github/maxtyson123/MaxOS?style=for-the-badge
-[loc-url]: https://github.com/maxtyson123/MaxOS
+[loc-tokei-url]: https://tokei.rs/b1/github/OhFrancy/JaOS?style=for-the-badge
+[repo-url]: https://github.com/OhFrancy/JaOS
 
