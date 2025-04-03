@@ -34,6 +34,7 @@
 <!-- Image here -->
 
 JaOS is a hobby operating system, in really early development, developed using C and ASM. The Operating System is far from being ready to use.
+
 This is completely a hobby project and was not born as a product.
 
 <p align="right">(<a href="#readme-top">top</a>)</p>
