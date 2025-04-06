@@ -1,0 +1,4 @@
+#!/bin/bash
+CONF_PATH=bochs/bochs.conf
+
+bochs -f $CONF_PATH

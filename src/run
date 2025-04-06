@@ -1,0 +1,35 @@
+#!/bin/bash
+
+DISK_IMG=jaos.img
+
+MEDIA=build/$DISK_IMG # Bootable file
+ARCH=i386      # Architecture
+RAM=128        # MBs
+
+CPU=core2duo
+
+# Exits if the bootable image is not found.
+if [ ! -f $MEDIA ]; then
+     echo "Bootable file - '$MEDIA' - not found locally."
+     exit
+fi
+# Prompts qemu installation if not installed
+if ! command -v qemu-system-x86_64 &> /dev/null || ! command -v qemu-system-i386 &> /dev/null; then
+    echo "Qemu not installed, it is required to continue, do you want to install it? [y/n]"
+          read prompt
+          if [[ $( echo $prompt | tr '[:upper:]' '[:lower:]' ) == 'y' ]]; then
+               sudo apt install qemu-system-x86
+               sudo apt install qemu-system-common
+          else
+               exit
+          fi
+fi
+
+# Run argument
+qemu-system-$ARCH \
+-cpu $CPU \
+-m $RAM \
+-fda $MEDIA \
+
+#-usb \
+#-vga std \
