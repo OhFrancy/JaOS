@@ -1,4 +1,23 @@
 #!/bin/bash
+
+#
+# This is a script that should only be used for testing or debugging, it does NOT take count of all the edge-cases for error handling.
+# If you encounter any Bochs error, it means that you didn't set it up correctly, please follow the official documentation at this link:
+# https://bochs.sourceforge.io/doc/docbook/user/introduction.html
+#
+# Last modified: 10/04/2025
+#
+
+if ! command -v bochs &> /dev/null; then
+	echo "Error: bochs package not installed, do you want to install it? [Y/n]"
+	read prompt
+	if [[ $( echo $prompt | tr '[:upper:]' '[:lower:]' ) == 'y' ]]; then
+		sudo apt install bochs
+	fi
+	echo "Bochs successfully installed, but you should configure it to continue, exiting..."
+	exit
+fi
+
 CONF_PATH=bochs/bochs.conf
 
 bochs -f $CONF_PATH

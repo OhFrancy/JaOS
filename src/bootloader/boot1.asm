@@ -1,5 +1,5 @@
-org 0x7C00
-bits 16
+[ORG 0x7C00]
+[BITS 16]
 
 ;
 ; FAT 12 headers after overwrite
@@ -8,7 +8,7 @@ bits 16
 jmp short start
 nop
 
-bpb_oem:                      db "MSWIN4.1"       ; 8 bytes
+bpb_oem:                      db "MSWIN4.1"            ; 8 bytes
 bpb_bytes_per_sector:         dw 512
 bpb_sectors_per_cluster:      db 1
 bpb_reserved_sectors:         dw 1
@@ -23,11 +23,11 @@ bpb_hidden_sectors:           dd 0
 bpb_large_sectors:            dd 0
 
 ebr_drive_number:             db 0
-                              db 0                ; reserved
+                              db 0                     ; reserved
 ebr_signature:                db 0x29
-ebr_volume_id:                db 0x10, 0x20, 0x30, 0x40
-ebr_volume_label:             db "JAOS       "    ; 11 bytes, padded with spaces
-ebr_sys_id:                   db "FAT12   "       ; 8 bytes, padded with spaces
+ebr_volume_id:                dd 0x10203040            ; random 4 bytes value
+ebr_volume_label:             db "JAOS       "         ; 11 bytes, padded with spaces
+ebr_sys_id:                   db "FAT12   "            ; 8 bytes, padded with spaces
 
 ;
 ; Bootcode start
@@ -69,6 +69,7 @@ main:
      mov sp, 0x7C00
 
 	jmp load_rootdir
+
 
 ;
 ; FAT12 Loading files
@@ -187,6 +188,8 @@ load_rootdir:
 	mov WORD [file_cluster], dx				; update cluster
 	cmp dx, 0xFF0							; if valid cluster, go to the next one
 	jb .load_file
+
+	; jump to second stage
 	jmp 0x0000:0x8000
 
 ;
@@ -202,7 +205,6 @@ cluster_to_lba:
 	pop di
 	ret
 
-
 ;
 ; Convertion LBA - CHS Function
 ; params:
@@ -212,7 +214,6 @@ cluster_to_lba:
 ;    cx (6-15 bits) - Cylinder
 ;    dh             - Head
 lba_to_chs:
-
      push ax
      push dx
 

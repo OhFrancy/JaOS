@@ -67,7 +67,6 @@ $(BL2_BIN): $(BL2_SRC) make_dir
 #	@$(ASM) $(ASMFLAGS) $< -o $@
 
 make_dir:
-	@echo "Trying to create $(BUILD_DIR) directory..."
 	@mkdir -p $(BUILD_DIR)
 
 clean:
