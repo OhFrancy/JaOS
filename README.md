@@ -54,7 +54,11 @@ Use QEMU if you want to run the OS in a virtual machine.
 ## JaOS Roadmap
 <a name="roadmap"></a>
 
-- [] Complete Bootloader
+- [] Complete the multi-stage bootloader
+	- [x] Read and load from disk
+	- [x] Enter second stage (out of bootsector)
+	- [] Build a Global Descriptor Table
+	- [] Enter protected mode, segmented memory
 - [] Load Kernel
 
 -- More to add --
@@ -62,7 +66,7 @@ Use QEMU if you want to run the OS in a virtual machine.
 <p align="right">(<a href="#readme-top">top</a>)</p>
 
 
-<!-- CONTRIBUTING --> 
+<!-- CONTRIBUTING -->
 <!--
 ## Contributing
 

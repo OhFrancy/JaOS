@@ -1,5 +1,7 @@
-# Prerequisites
+build/*
 *.ini
+
+# Prerequisites
 *.d
 
 # Object files
