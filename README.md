@@ -54,26 +54,21 @@ Use QEMU if you want to run the OS in a virtual machine.
 ## JaOS Roadmap
 <a name="roadmap"></a>
 
- **Multi-stage bootloader** ->
-	- [x] Basic utility functionalities
-	- [x] Read and load from disk, using the BIOS
-	- [x] Enter second stage (out of bootsector)
-	- [x] Build a GDT (Global Descriptor Table)
-	- [x] Enter Protected mode 32-bits, segmented memory
-	--- More to add ---
- **Kernel** ->
-	--- More to add ---
+**Multi-stage bootloader**
+- [x] Basic utility functionalities
+- [x] Read and load from disk, using the BIOS
+- [x] Enter second stage (out of bootsector)
+- [x] Build a GDT (Global Descriptor Table)
+- [x] Enter Protected mode 32-bits, segmented memory
 
---- More to add ---
-
+**Kernel**
 
 <p align="right">(<a href="#readme-top">top</a>)</p>
-
 
 <!-- CONTRIBUTING -->
 ## Contributing
 
-Contributions is really important for this project, and learning purposes, it helps both you and me!
+Contributions are really important for this project, and learning purposes, it helps both you and me!
 
 Any contribution you make is **really appreciated**.
 
