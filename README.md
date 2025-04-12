@@ -74,17 +74,19 @@ Use QEMU if you want to run the OS in a virtual machine.
 ## Contributing
 
 Contributions is really important for this project, and learning purposes, it helps both you and me!
+
 Any contribution you make is **really appreciated**.
 
 If you think you have something to add to the project, that would make it better, fork the repo and make a pull request.
-Remember to give the repository a star, as it'd help to involve and interest more people towards the project!
+
+Remember to give the repository a **star**, as it'd help to involve and interest more people towards the project!
 
 How to contribute with git: (if you are still not sure, search for a tutorial online, there are a lot!)
 
 0. Fork the Project
 1. Create your branch (`git checkout -b AmazingFeature`)
-2. Commit your changes (`git commit -m 'Add AmazingFeature, ...'`)
-3. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Commit your changes (`git commit -m 'Add AmazingFeature, ...(add more info)'`)
+3. Push to the branch (`git push origin AmazingFeature`)
 4. Open a pull request
 
 After this, your PR will be checked: if found with no conflicts and a useful request, it will be merged to the project.
