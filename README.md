@@ -1,9 +1,9 @@
-
 <a name="readme-top"></a>
 
-[![Lines of Code][loc-tokei-url]][repo-url]
+<!-- SETS THE LINES COUNTER, SEE 'tokei' ON GITHUB FOR MORE INFO -->
+[![Lines of Code][tokei-url]][repo-url]
 
-<!-- LOGO -->
+<!-- UPCOMING LOGO -->
 <div>
 <h1 align="center">JaOS</h1>
 
@@ -54,39 +54,46 @@ Use QEMU if you want to run the OS in a virtual machine.
 ## JaOS Roadmap
 <a name="roadmap"></a>
 
-- [] Complete the multi-stage bootloader
-	- [x] Read and load from disk
+ **Multi-stage bootloader** ->
+	- [x] Basic utility functionalities
+	- [x] Read and load from disk, using the BIOS
 	- [x] Enter second stage (out of bootsector)
-	- [] Build a Global Descriptor Table
-	- [] Enter protected mode, segmented memory
-- [] Load Kernel
+	- [x] Build a GDT (Global Descriptor Table)
+	- [x] Enter Protected mode 32-bits, segmented memory
+	--- More to add ---
+ **Kernel** ->
+	--- More to add ---
 
--- More to add --
+--- More to add ---
+
 
 <p align="right">(<a href="#readme-top">top</a>)</p>
 
 
 <!-- CONTRIBUTING -->
-<!--
 ## Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Contributions is really important for this project, and learning purposes, it helps both you and me!
+Any contribution you make is **really appreciated**.
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
+If you think you have something to add to the project, that would make it better, fork the repo and make a pull request.
+Remember to give the repository a star, as it'd help to involve and interest more people towards the project!
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+How to contribute with git: (if you are still not sure, search for a tutorial online, there are a lot!)
 
--->
+0. Fork the Project
+1. Create your branch (`git checkout -b AmazingFeature`)
+2. Commit your changes (`git commit -m 'Add AmazingFeature, ...'`)
+3. Push to the branch (`git push origin feature/AmazingFeature`)
+4. Open a pull request
+
+After this, your PR will be checked: if found with no conflicts and a useful request, it will be merged to the project.
 
 ## License
 <a name="license"></a>
 Distributed under the MIT License. `LICENSE` for more info.
-<!-- MD IMAGES AND LINKS -->
-[loc-tokei-url]: https://tokei.rs/b1/github/OhFrancy/JaOS?style=for-the-badge
+
+<!-- IMAGES & LINKS -->
+[tokei-url]: https://tokei.rs/b1/github/OhFrancy/JaOS?style=for-the-badge
 [repo-url]: https://github.com/OhFrancy/JaOS
 
