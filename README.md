@@ -52,6 +52,11 @@ or **SSH**:
 ```
 git clone git@github.com:OhFrancy/JaOS.git && cd JaOS
 ```
+For the building process to start, you must also install **make**, to do so on Ubuntu/Debian:
+```
+sudo apt install make
+```
+I can't list all packet managers here, so please, search for yours online.
 <p align="right">(<a href="#readme-top">top</a>)</p>
 
 ### Build & Installation
