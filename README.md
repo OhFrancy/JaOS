@@ -20,8 +20,9 @@
     </li>
     <li><a href="#requisites">Requisites</a></li>
     <li><a href="#installation">Build and Installation</a></li>
-    <li><a href="#roadmap">Usage</a></li>
-    <li><a href="#license">Roadmap</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#compatibility">Compatibility</a></li>
+    <li><a href="#license">Licensing</a></li>
   </ol>
 </details>
 
@@ -33,75 +34,47 @@
 
 **JaOS is a hobby operating system**, in really early development, developed using C and ASM. The Operating System is far from being ready to use for any real-life purpose.
 
-It currently works on these distributions: **Ubuntu, Debian, Fedora, Arch**, it might also work on **RHEL** and **CentOS** but it's NOT tested.
+For supported OS and Distributions, please check **<a href="#compatibility">Compatibility</a>**.
 
 This is completely a hobby project and was not born as a product.
 <p align="right">(<a href="#readme-top">top</a>)</p>
 
 ### Requisites for building
 <a name="requisites"></a>
-This step is only required if you plan to do a **manual installation**.
 
-Start by cloning and cd'ing into the repo:
+The project was built with the idea of automating as much as possible, every dependency requirement will be handled through the building process.
+
+Though, to get started, you must clone and cd into the repository through git, either with **HTTPS**:
 ```
 git clone https://github.com/OhFrancy/JaOS.git && cd JaOS
 ```
-Then run this script for the dependencies and follow the prompts (you'll be asked for root permissions):
+or **SSH**:
 ```
-build_scripts/install_dependencies.sh
+git clone git@github.com:OhFrancy/JaOS.git && cd JaOS
 ```
+<p align="right">(<a href="#readme-top">top</a>)</p>
 
 ### Build & Installation
 <a name="installation"></a>
 
-#### Automated Building
-If you didn't already, you must clone and cd into the repo:
+To build **JaOS** you can simply run:
 ```
-git clone https://github.com/OhFrancy/JaOS.git && cd JaOS
+make build
 ```
-Execute the script with flag '--toolchain', to build the toolchain for the first time, build and run the OS:
-```
-./run --toolchain
-```
-This will take some time; after building the toolchain for the first time, you can omit the '--toolchain' to only build the OS and run it through QEMU.
+If this is your first time building the Operating System, it'll take some extra time to install the dependencies and build the toolchain.
 
-##### Supported shells
-If you got a shell related error, while building the toolchain, it's likely that your shell is not supported.
+Now you're ready to run the OS, it currently uses **QEMU** to do so, simply run:
+```
+make run
+```
+A window will pop up and the OS will boot.
 
-You can easily fix this by adding this line of code to your shell configuration file.
-```
-export PATH="$HOME/opt/cross/bin/i686-elf/bin:$PATH"
-```
-(If you don't know what your shell configuration file is, search online for '```<Shell> configuration file```')
+### Installation Errors
+If any error occurs, it might be related to your **distribution** or **packet manager**.
 
-Then to source the file to update your session, ```source <Path/To/ShellConf>```.
+Please, make sure to read <a href="#compatibility">Compatibility</a> for what's supported and what's not.
 
-You don't need to re-build the toolchain every time, from now on you can just execute 'run' without flags to run the OS.
-<p align="right">(<a href="#readme-top">top</a>)</p>
-
-#### Manual Building
-
-**Make sure you installed the dependencies (see 'Requisites for building')**
-
-First, we'll clone and cd in to the repo:
-```
-git clone https://github.com/OhFrancy/JaOS.git && cd JaOS
-```
-To build the toolchain and then the OS, you'll need to run:
-```
-make toolchain all
-```
-You'll also want to find your shell configuration file and add this line:
-```
-export PATH="$HOME/opt/cross/bin/i686-elf/bin:$PATH"
-```
-And source it, ```source <Path/To/ShellConf>```.
-
-To finally run QEMU, you can use this command that will create 'qemu.sh', with all the flags for it to work already set up:
-```
-( echo "#\!/bin/bash" && echo "qemu-system-i386 -cpu core2duo -m 1024M -fda build/jaos.img -vga std" ) > qemu.sh && chmod a+x qemu.sh
-```
-Now simply run it with ```./qemu.sh``` whenever you want.
+If the error persists, you can open a **Github Issue** and report it.
 
 <p align="right">(<a href="#readme-top">top</a>)</p>
 
@@ -141,9 +114,20 @@ How to contribute with git: (if you are still not sure, search for a tutorial on
 
 After this, your PR will be checked: if found with no conflicts and a useful request, it will be merged to the project.
 
+## Compatibility
+<a name="compatibility"></a>
+**JaOS** currently only supports **Linux distributions** for the installation process.
+
+It does **NOT** support **Windows** and **MacOS**, even though in the near future I'm hoping to have that.
+
+Here is a list of currently known supported Linux distributions:
+-  Ubuntu/Debian,
+-  Fedora,
+-  Arch Linux.
+
 ## License
 <a name="license"></a>
-Distributed under the MIT License. `LICENSE` for more info.
+Distributed under the MIT License. [LICENSE](LICENSE) for more info.
 
 <!-- IMAGES & LINKS -->
 [tokei-url]: https://tokei.rs/b1/github/OhFrancy/JaOS?style=for-the-badge
