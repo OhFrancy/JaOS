@@ -1,8 +1,9 @@
 #!/bin/bash
 
 #
-# This is a script that should only be used for testing or debugging, it does NOT take count of all the edge-cases for error handling.
+# This is a prototype script that should only be used for debugging, it does NOT take count of all the edge-cases for error handling.
 # If you encounter any Bochs error, it means that you didn't set it up correctly, please follow the official documentation at this link:
+#
 # https://bochs.sourceforge.io/doc/docbook/user/introduction.html
 #
 # Last modified: 10/04/2025
@@ -18,6 +19,11 @@ if ! command -v bochs &> /dev/null; then
 	exit
 fi
 
-CONF_PATH=bochs/bochs.conf
+# Handle absolute and relative paths, a.k.a. if script is ran from a different WD
+if [[ $PWD == *"debug_scripts"* ]]; then
+     CONF_PATH=$PWD/bochs/bochs.conf
+else
+     CONF_PATH=$PWD/debug/bochs/bochs.conf
+fi
 
 bochs -f $CONF_PATH

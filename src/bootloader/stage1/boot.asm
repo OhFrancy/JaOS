@@ -1,4 +1,10 @@
-[ORG 0x7C00]
+;
+; Bootloader's first stage
+;
+;	Copyright (c) 2025 Francesco Lauro. All rights reserved.
+;	SPDX-License-Identifier: MIT
+;
+
 [BITS 16]
 
 ;
@@ -8,6 +14,7 @@
 jmp short start
 nop
 
+; FAT12 headers
 bpb_oem:                      db "MSWIN4.1"            ; 8 bytes
 bpb_bytes_per_sector:         dw 512
 bpb_sectors_per_cluster:      db 1
@@ -29,12 +36,9 @@ ebr_volume_id:                dd 0x10203040            ; random 4 bytes value
 ebr_volume_label:             db "JAOS       "         ; 11 bytes, padded with spaces
 ebr_sys_id:                   db "FAT12   "            ; 8 bytes, padded with spaces
 
-;
-; Bootcode start
-;
-
+global start
 start:
-     jmp main
+	jmp main
 
 ;
 ; Puts function, writes a string to the screen
@@ -58,59 +62,23 @@ print:
      pop ax
      ret
 
-main:
-     cld
-     mov ax, 0x00
-     mov ds, ax
-     mov es, ax
-
-	; set up a stack
-     mov ss, ax
-     mov sp, 0x7C00
-
-	jmp load_rootdir
-
-
 ;
-; FAT12 Loading files
-;
+; Loads the given file, if found, at the given memory offset: 0x0000:offset
+; params:
+;	si	- file name string (11 bytes, uppercase)
+;    es   - memory segment   (0x0 - 0xFFFF)
+;    bx	- memory offset    (0x0 - 0xFFFF)
+; Before calling the offsets for the rootdirectory, FAT, and file, should be correctly set
+load_file:
+	pusha
 
-;
-; Loads the root dir sector
-;
+     push bx
+     push es                                      ; save the segment
+	push si								; save file name argument for later
 
-load_rootdir:
-	; get the rootdir size in sectors
-	; rootdir_size = (entries * 32) / bpb_bytes_per_sector
-	mov ax, 32							; FAT entry size
-	mul WORD [bpb_root_dir_entries]
-	div WORD [bpb_bytes_per_sector]
-	mov [rootdir_sectors], ax
+	xor di, di
 
-	xor ax, ax
-
-	; get the LBA of the rootdir
-	; rootdir_start = (fat_count * sectors_per_fat) + reserved_sectors
-	mov al, BYTE [bpb_fat_tables]
-	mul BYTE [bpb_sectors_per_fat]			; bfr: dx:ax
-	add ax, [bpb_reserved_sectors]
-
-	; get the start of the first data cluster
-	; first_cluster_start = rootdir_size + (fat_sector_size + reserved_sectors [register ax])
-
-	mov WORD [datasector], ax
-	mov bx, WORD [rootdir_sectors]
-	add WORD [datasector], bx
-
-	push ax
-	xor ax, ax
-	mov es, ax
-	pop ax
-
-	mov dl, [ebr_drive_number]
-	mov cl, [rootdir_sectors]				; read all rootdir sectors
-	mov bx, [rootdir_offset]					; load after the stage 1 bootloader sector
-	call disk_read
+	call load_rootdir
 
 	; start reading the rootdir entries and check for the filename
 	mov cx, [bpb_root_dir_entries]
@@ -118,42 +86,35 @@ load_rootdir:
 
 	xor ax, ax
 	mov es, ax
-	.loop:
+	.find_loop:
+		pop si
+		push si
 		push cx
 		mov cx, 11						; file name length, check all char in the string
-		mov si, second_stage_file
+
 		push di
 		repe cmpsb						; compare filename with byte at [es:di] (entry) till the end or non-match
 		pop di
-		je .loadfat						; found the address to find the file cluster
+		je .found							; found the address to find the file cluster
 		pop cx
 		add di, 32						; go to the next entry
-		loop .loop
+		loop .find_loop
 
 		mov si, msg_file_not_found
 		jmp error_reboot
+.found:
+     mov si, msg_file_found
+     call print
 
-.loadfat:
-	mov si, msg_file_found
-	call print
+     pop cx
+     pop si
+	call load_fat
 
-	mov dx, WORD [di + 0x001A]				; get starting cluster ( + 26 )
-	mov WORD [file_cluster], dx
+	pop es                                       ; get the segment
+	pop bx								; get offset where to load the file, from DI from the stack
+	jmp .load_file_clusters
 
-	xor ax, ax
-	mov es, ax							; set ES to 0
-
-	mov ax, [bpb_reserved_sectors]			; read after the reserved boot sector
-	mov bx, [fat_offset]					; save at 0x0000:0x2000
-	mov cl, [bpb_sectors_per_fat]				; read all the FAT
-	mov dl, BYTE [ebr_drive_number]
-
-	call disk_read
-
-	mov bx, [file_offset]					; load file at 0x0000:0x8000
-	jmp .load_file
-
-.load_file:
+.load_file_clusters:
 	mov ax, WORD [file_cluster]
 	call cluster_to_lba						; convert file cluster to lba
 
@@ -187,52 +148,66 @@ load_rootdir:
 .done:
 	mov WORD [file_cluster], dx				; update cluster
 	cmp dx, 0xFF0							; if valid cluster, go to the next one
-	jb .load_file
-
-	; jump to second stage
-	jmp 0x0000:0x8000
-
-;
-; params:
-;	ax	- cluster
-; returns:
-;	ax	-  lba
-cluster_to_lba:
-	push di
-	sub ax, 0x2
-	mul BYTE [bpb_sectors_per_cluster]
-	add ax, WORD [datasector]
-	pop di
+	jb .load_file_clusters
+	popa
 	ret
 
 ;
-; Convertion LBA - CHS Function
-; params:
-;    ax             - LBA address
-; returns:
-;    cx (0-6 bits)  - Sector
-;    cx (6-15 bits) - Cylinder
-;    dh             - Head
-lba_to_chs:
-     push ax
-     push dx
+; Loads the rootdirectory in to memory at the offset in [rootdir_offset], should be called only once
+;
+load_rootdir:
+     pusha
 
-     xor dx, dx
-     div word [bpb_sectors_per_track]   ;    ax = (LBA / SectorsPerTrack)
-                                        ;    dx = (LBA % SectorsPerTrack)
-     inc dx                             ;    sector = (LBA % SectorsPerTrack) + 1
-     mov cx, dx
-     xor dx, dx
-     div word [bpb_heads]               ;    ax = (LBA / SectorsPerTrack) / Heads = Cylinder
-                                        ;    dx = (LBA / SectorsPerTrack) % Heads = Head
-     mov dh, dl                         ;    Head
-     mov ch, al
-     shl ah, 6                          ; shift-left the 2 left bits to make them most significant
-     or cl, ah                          ; OR with sector, to put the 2 MSb of cylinder at the end
+     ; get the rootdir size in sectors
+	; rootdir_size = (entries * 32) / bpb_bytes_per_sector
+	mov ax, 32          					; FAT entry size
+	mul WORD [bpb_root_dir_entries]
+	div WORD [bpb_bytes_per_sector]
+	mov [rootdir_sectors], ax
 
-     pop ax
-     mov dl, al                         ; only restore dl, dh untouched
-     pop ax
+	xor ax, ax
+
+	; get the LBA of the rootdir
+	; rootdir_start = (fat_count * sectors_per_fat) + reserved_sectors
+	mov al, BYTE [bpb_fat_tables]
+	mul BYTE [bpb_sectors_per_fat]			; bfr: dx:ax
+	add ax, [bpb_reserved_sectors]
+
+	; get the start of the first data cluster
+	; first_cluster_start = rootdir_size + (fat_sector_size + reserved_sectors [register ax])
+
+	mov WORD [datasector], ax
+	mov bx, WORD [rootdir_sectors]
+	add WORD [datasector], bx
+
+	push ax
+	xor ax, ax
+	mov es, ax
+	pop ax
+
+	mov dl, [ebr_drive_number]
+	mov cl, [rootdir_sectors]				; read all rootdir sectors
+	mov bx, [rootdir_offset]					; load after the stage 1 bootloader sector
+	call disk_read
+     popa
+     ret
+
+;
+; Loads FAT at [fat_offset], should be called once
+;
+load_fat:
+	mov dx, WORD [di + 0x001A]				; get starting cluster ( + 26 )
+	mov WORD [file_cluster], dx
+
+	xor ax, ax
+	mov es, ax							; set ES to 0
+
+	mov ax, [bpb_reserved_sectors]			; read after the reserved boot sector
+	mov bx, [fat_offset]					; save at 0x0000:0x2000
+	mov cl, [bpb_sectors_per_fat]				; read all the FAT
+	mov dl, BYTE [ebr_drive_number]
+
+	call disk_read
      ret
 
 ;
@@ -298,6 +273,49 @@ reset_disk:
      ret
 
 ;
+; params:
+;	ax	- cluster
+; returns:
+;	ax	-  lba
+cluster_to_lba:
+	push di
+	sub ax, 0x2
+	mul BYTE [bpb_sectors_per_cluster]
+	add ax, WORD [datasector]
+	pop di
+	ret
+
+;
+; Convertion LBA - CHS Function
+; params:
+;    ax             - LBA address
+; returns:
+;    cx (0-6 bits)  - Sector
+;    cx (6-15 bits) - Cylinder
+;    dh             - Head
+lba_to_chs:
+     push ax
+     push dx
+
+     xor dx, dx
+     div word [bpb_sectors_per_track]   ;    ax = (LBA / SectorsPerTrack)
+                                        ;    dx = (LBA % SectorsPerTrack)
+     inc dx                             ;    sector = (LBA % SectorsPerTrack) + 1
+     mov cx, dx
+     xor dx, dx
+     div word [bpb_heads]               ;    ax = (LBA / SectorsPerTrack) / Heads = Cylinder
+                                        ;    dx = (LBA / SectorsPerTrack) % Heads = Head
+     mov dh, dl                         ;    Head
+     mov ch, al
+     shl ah, 6                          ; shift-left the 2 left bits to make them most significant
+     or cl, ah                          ; OR with sector, to put the 2 MSb of cylinder at the end
+
+     pop ax
+     mov dl, al                         ; only restore dl, dh untouched
+     pop ax
+     ret
+
+;
 ; Display error and reboot
 ; params:
 ;	si	- Message string
@@ -310,10 +328,32 @@ error_reboot:
      mov al, 0xFE
      out 0x64, al                       ; write FEh to port 0x64, triggering a reboot
 
+main:
+     cld
+     mov ax, 0x00
+     mov ds, ax
+     mov es, ax
+
+	; set up a stack
+     mov ss, ax
+     mov sp, 0x7C00
+
+
+	mov ax, 0x0000
+	mov es, ax
+	mov bx, 0x8000
+	mov si, second_stage_file
+	call load_file
+
+	jmp 0x0000:0x8000
+
+
 ; success/error messages
-msg_read_failure	db "Disk read failed...", 10, 0
-msg_file_not_found	db "File 'boot2.bin' not found...", 13, 10, 0
-msg_file_found		db "File found, loading...", 13, 10, 0
+msg_read_failure	db "Disk read failed", 10, 13, 0
+msg_file_not_found	db "File not found", 13, 10, 0
+msg_file_found		db "File found", 13, 10, 0
+
+second_stage_file	db "BOOT2   BIN"	; 11 bytes, padded with spaces
 
 ; temporary variables
 rootdir_sectors	dw 0x0
@@ -323,11 +363,6 @@ file_cluster		dw 0x0
 ; loading offsets
 fat_offset		dw 0x0500
 rootdir_offset		dw 0x1000
-file_offset		dw 0x8000
 
-second_stage_file	db "BOOT2   BIN"	; 11 bytes, padded with spaces
-
-times 510-($-$$) db 0                   ; fill sector with 0s
-
-; Bootable signature
-dw   0xAA55
+times 510-($-$$) db 0                   ; pad remaining bytes with 0sboot1
+dw 0xAA55

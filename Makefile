@@ -1,34 +1,23 @@
-BUILD_DIR := build
-SRC_DIR	:= src
-
-BL_SRC 	:= $(SRC_DIR)/bootloader/boot1.asm
-BL2_SRC	:= $(SRC_DIR)/bootloader/boot2.asm
-
-# Kernel not present yet
-# KL_SRC 	:= $(SRC_DIR)/kernel/
-
-FLOPPY 	:= $(BUILD_DIR)/jaos.img
-BL_BIN 	:= $(BUILD_DIR)/boot1.bin
-BL2_BIN	:= $(BUILD_DIR)/boot2.bin
-
-# KL_BIN 	:= $(BUILD_DIR)/kernel.bin
-
-
-CC		:= gcc
-ASM		:= nasm
-ASMFLAGS  := -f bin
-
-.PHONY: all ex bootloader kernel clean build_fat make_dir
-
 #
-# Floppy disk img Creation
+# Building Makefile for JaOS
+#
+#	Copyright (c) 2025 Francesco Lauro. All rights reserved.
+#	SPDX-License-Identifier: MIT
 #
 
-all: $(FLOPPY) build_fat
+BUILD_DIR  := build
+SRC_DIR	 := src
 
-ex: all
-	./run
+FLOPPY 	 := $(BUILD_DIR)/jaos.img
+BL_BIN 	 := $(BUILD_DIR)/stage1/boot1.bin
+BL2_BIN	 := $(BUILD_DIR)/stage2/boot2.bin
 
+build: install_deps build_toolchain $(FLOPPY)
+
+include scripts/toolchain.mk
+
+install_deps:
+	@scripts/install_deps.sh
 
 $(FLOPPY): bootloader # kernel
 	@echo "Creating the floppy disk image..."
@@ -43,31 +32,36 @@ $(FLOPPY): bootloader # kernel
 	@# Copy the second stage of the bootloader as a filesystem in the root dir
 	@mcopy -i $(FLOPPY)	$(BL2_BIN) "::boot2.bin"
 
-#
+	@# Copy the kernel
+	@#mcopy -i $(FLOPPY) $(KL_BIN) "::kernel.bin"
+
 # Bootloader Creation
-#
-bootloader: $(BL_BIN) $(BL2_BIN)
+bootloader: clean $(BL_BIN) $(BL2_BIN)
 
-$(BL_BIN): $(BL_SRC) make_dir
+$(BL_BIN):
+	@mkdir -p $(BUILD_DIR)/stage1
 	@echo "Assembling the first stage of the bootloader..."
-	@$(ASM) $(ASMFLAGS) $< -o $@
+	@make -C $(SRC_DIR)/bootloader/stage1
 
-$(BL2_BIN): $(BL2_SRC) make_dir
-	@echo "Assembling the second stage of the bootloader..."
-	@$(ASM) $(ASMFLAGS) $< -o $@
+$(BL2_BIN):
+	@mkdir -p $(BUILD_DIR)/stage2
+	@echo "Building the second stage of the bootloader..."
+	@make -C $(SRC_DIR)/bootloader/stage2
+#
+# Builds the cross-tools
+#
+build_toolchain:
+	@if [ ! -d $$HOME/opt/cross_jaos/i686-elf ]; then	\
+		echo "Installing toolchain..."	; \
+		make clean_toolchain toolchain	; \
+	fi
+	@echo "Toolchain already installed, continuing..."
 
 #
-# Kernel Creation (on-hold)
+# Run script, currently with QEMU
 #
-
-# kernel: $(KL_BIN)
-
-#$(BUILD_DIR)/kernel.bin: kernel/$(KL_SRC) make_dir
-#	@echo "Assembling $< to $@..."
-#	@$(ASM) $(ASMFLAGS) $< -o $@
-
-make_dir:
-	@mkdir -p $(BUILD_DIR)
+run:
+	@scripts/run_qemu.sh
 
 clean:
 	@echo "Cleaning build folder"
