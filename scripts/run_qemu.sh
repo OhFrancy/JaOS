@@ -5,15 +5,6 @@
 #	SPDX-License-Identifier: MIT
 #
 
-#
-# Automation script for building and running the Operating System through qemu.
-#
-# It SHOULD handle most of the edge-cases related to error-handling; however, if you encounter any unknown error, you can report it as an issue.
-# It's a replacement to what in the future (I hope near!) might be a GUI version to build the operating system.
-#
-# Last modified: 15/04/2025
-#
-
 . scripts/config.sh
 
 argv=$@
