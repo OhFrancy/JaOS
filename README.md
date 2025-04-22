@@ -95,7 +95,7 @@ If the error persists, you can open a **Github Issue** and report it.
 - [x] Build a working IDT (Interrupt Descriptor Table)
 - [ ] Write a driver for files and directories, FAT12
 - [ ] Initialize the kernel
-- [ ] Initialize the PIT and remap the PCI
+- [ ] Initialize the PIT and remap the PIC
 - [ ] Handle basic keyboard functionalities (receive input)
 **Kernel**
 
