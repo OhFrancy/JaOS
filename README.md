@@ -87,7 +87,7 @@ If the error persists, you can open a **Github Issue** and report it.
 <a name="roadmap"></a>
 
 **Multi-stage bootloader**
-- [x] Basic utility functionalities
+- [x] Set up the bootloader's first stage
 - [x] Read and load from disk, using the BIOS
 - [x] Enter second stage (out of bootsector)
 - [x] Build a working GDT (Global Descriptor Table)
