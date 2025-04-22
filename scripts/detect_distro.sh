@@ -1,11 +1,9 @@
 #
-# Distribution and packet manager detection, /etc/os-release and PM checking.
+# Distribution and packet manager detection, os-release and PM checking.
 #
 #	Copyright (c) 2025 Francesco Lauro. All rights reserved.
 #	SPDX-License-Identifier: MIT
 #
-
-
 
 # Variable setting functions and packet checking
 ubuntu_debian() {

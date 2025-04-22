@@ -6,5 +6,3 @@ ASM	 := nasm
 T_CC	 := $(PREFIX)gcc
 T_LD  := $(PREFIX)ld
 T_ASM := $(PREFIX)as
-
-

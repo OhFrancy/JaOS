@@ -20,7 +20,7 @@ export PATH := "$(PREFIX)/bin:$(PATH)"
 ARIA	   := aria2c -x 16 -s 16
 
 .PHONY: toolchain gcc binutils clean_all
-toolchain: clean_toolchain makedir gcc cleanup
+toolchain: clean_toolchain makedir_toolchain gcc cleanup
 
 binutils:
 	@cd $(OUT_DIR) && $(ARIA) $(BINUTILS_URL)
@@ -50,7 +50,7 @@ gcc: binutils
 	@make -j$(nproc --ignore 1) -C $(GCC_DIR) all-gcc all-target-libgcc
 	@make -j$(nproc --ignore 1) -C $(GCC_DIR) install-gcc install-target-libgcc
 
-makedir:
+makedir_toolchain:
 	@mkdir -p $$HOME/opt/cross_jaos
 
 cleanup:
