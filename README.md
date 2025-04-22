@@ -90,10 +90,13 @@ If the error persists, you can open a **Github Issue** and report it.
 - [x] Basic utility functionalities
 - [x] Read and load from disk, using the BIOS
 - [x] Enter second stage (out of bootsector)
-- [x] Build a GDT (Global Descriptor Table)
+- [x] Build a working GDT (Global Descriptor Table)
 - [x] Enter Protected mode 32-bits, segmented memory
-- [ ] Jump to C code in 2th stage
-
+- [x] Build a working IDT (Interrupt Descriptor Table)
+- [ ] Write a driver for files and directories, FAT12
+- [ ] Initialize the kernel
+- [ ] Initialize the PIT and remap the PCI
+- [ ] Handle basic keyboard functionalities (receive input)
 **Kernel**
 
 <p align="right">(<a href="#readme-top">top</a>)</p>
