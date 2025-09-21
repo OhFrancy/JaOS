@@ -48,7 +48,7 @@ OBJS_ALL	:= $(OBJS1) $(OBJS2)
 
 DEPS		:= $(OBJS_ALL:.o=.d)
 
-build: clean install_deps build_toolchain $(FLOPPY)
+build: clean install_deps build_toolchain
 
 include scripts/toolchain.mk
 install_deps:
@@ -103,12 +103,12 @@ build_toolchain:
 		echo "Installing toolchain..."	; \
 		make clean_toolchain toolchain	; \
 		fi
-		@echo "Toolchain already installed, continuing..."
+		@echo "Toolchain already installed, proceeding..."
 
 #
 # Run script, currently emulated with QEMU
 #
-run:
+run: $(FLOPPY)
 	@scripts/run_qemu.sh
 
 makedir:

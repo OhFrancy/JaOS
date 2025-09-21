@@ -12,15 +12,15 @@
 
 DISTRO=
 CHECK=
-UPDATE=L
+UPDATE=
 INSTALL=
 DEPENDENCIES=
 
 UBUNTU_DEBIAN=(
-     build-essential
+     	build-essential
 	gcc
 	make
-     nasm
+	nasm
 	qemu-system-x86
 	qemu-system-common
 	libgmp3-dev
@@ -29,8 +29,10 @@ UBUNTU_DEBIAN=(
 	gcc-multilib
 	g++-multilib
 	libc6-dev-i386
-	lib32gcc-13-dev
-	aria2
+	bison
+	flex
+	libgmp-dev
+	texinfo
 	mtools
 )
 FEDORA=(
@@ -46,7 +48,6 @@ FEDORA=(
 	glibc-devel
 	libstdc++-devel.i686
 	libgcc.i686
-	aria2
 	mtools
 )
 ARCH=(
@@ -58,7 +59,6 @@ ARCH=(
 	 libgmp-static
 	 libmpc
 	 mpfr
-	 aria2
 	 mtools
 )
 
@@ -98,17 +98,12 @@ prompt_confirm() {
 }
 
 # To install will be filled by check_distro if successful
-to_install=()
 check_distro
 
 echo "Checking for dependencies packages."
 
 echo ""
-if [ "${#to_install[@]}" -gt 0 ]; then
-	install "${to_install[@]}"
-else
-	echo "Found all packages already installed."
-fi
+install "${DEPENDENCIES[@]}"
 
 throw_info 2 "dependencies installation process completed."
 

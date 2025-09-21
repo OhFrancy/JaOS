@@ -5,22 +5,15 @@
 #	SPDX-License-Identifier: MIT
 #
 
-# Variable setting functions and packet checking
+# Variable setting functions
 ubuntu_debian() {
 	DISTRO='Ubuntu/Debian'
-	CHECK=' dpkg -s'
+	CHECK='dpkg -s'
 	UPDATE='sudo apt-get update'
 	INSTALL='sudo apt-get install'
 	DEPENDENCIES=( "${UBUNTU_DEBIAN[@]}" )
 
-     throw_info 2 "detected $DISTRO as running distribution."
-
-     for pkg in "${DEPENDENCIES[@]}"; do
-          if ( ! $CHECK $pkg && $CHECK $pkg | grep deinstall ) &> /dev/null; then
-               echo "[✗] $pkg is NOT installed"
-               to_install+=($pkg)
-          fi
-     done
+     	throw_info 2 "detected $DISTRO as running distribution."
 }
 
 # Additional check for dnf and yum
@@ -40,12 +33,6 @@ fedora() {
 
      throw_info 2 "detected $DISTRO as running distribution."
 
-     for pkg in "${DEPENDENCIES[@]}"; do
-          if ! $CHECK $pkg &> /dev/null; then
-               echo "[✗] $pkg is NOT installed"
-               to_install+=($pkg)
-          fi
-    done
 }
 
 rhel_centos() {
@@ -55,13 +42,6 @@ rhel_centos() {
 	DEPENDENCIES=( "${FEDORA[@]}" )
 
      throw_info 2 "detected $DISTRO as running distribution."
-
-     for pkg in "${DEPENDENCIES[@]}"; do
-          if ! $CHECK $pkg &> /dev/null; then
-               echo "[✗] $pkg is NOT installed"
-               to_install+=($pkg)
-          fi
-    done
 }
 arch() {
 	DISTRO='Arch'
@@ -71,13 +51,6 @@ arch() {
 	DEPENDENCIES=( "${ARCH[@]}" )
 
      throw_info 2 "detected $DISTRO as running distribution."
-
-     for pkg in "${DEPENDENCIES[@]}"; do
-          if ! $CHECK $pkg &> /dev/null; then
-               echo "[✗] $pkg is NOT installed"
-               to_install+=($pkg)
-          fi
-    done
 }
 
 
