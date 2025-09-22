@@ -29,9 +29,7 @@ void main() {
 
 	printf(ascii_logo, BLUE);
 
-	unsigned long long int x = *(volatile int*)0xFFFFFFFFFFFF;
-	printf("%d", x);
-
+	printf("\n\nHello World\n", BLUE);
 	STOP;
 }
 

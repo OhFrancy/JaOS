@@ -353,7 +353,7 @@ msg_read_failure	db "Disk read failed", 10, 13, 0
 msg_file_not_found	db "File not found", 13, 10, 0
 msg_file_found		db "File found", 13, 10, 0
 
-second_stage_file	db "BOOT2   BIN"	; 11 bytes, padded with spaces
+second_stage_file	db "LOADER  BIN"	; 11 bytes, padded with spaces
 
 ; temporary variables
 rootdir_sectors	dw 0x0

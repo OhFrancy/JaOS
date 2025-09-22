@@ -13,18 +13,22 @@ FLOPPY 	 := $(BUILD_DIR)/jaos.img
 
 BL1_DIR	 := $(SRC_DIR)/bootloader/stage1
 BL2_DIR	 := $(SRC_DIR)/bootloader/stage2
+LOADER_DIR := $(SRC_DIR)/bootloader/loader
+DRIVER_DIR := $(SRC_DIR)/drivers
 
 JALIBC_DIR	:= $(SRC_DIR)/jalibc
 JALIBC_INCLUDE := $(JALIBC_DIR)/include
 
 BL1_BIN 	 := $(BUILD_DIR)/stage1/boot1.bin
-BL2_BIN	 := $(BUILD_DIR)/stage2/boot2.bin
+LOADER_BIN	 := $(BUILD_DIR)/loader/loader.bin
 
 ASM_FLAGS := -f elf32
 LD_FLAGS  := -T
 CC_FLAGS  := -ffreestanding -nostdlib -g -c -Wall -Wextra -Werror -Werror=format-security -I$(JALIBC_INCLUDE) -MMD -MP
 
+#
 # First stage srcs & objects
+#
 
 LD1_SRC	:= $(SRC_DIR)/bootloader/stage1/link.ld
 
@@ -33,16 +37,18 @@ ASM1_SRC  := $(shell find $(BL1_DIR) -name "*.asm")
 ASM1_OBJ	:= $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.o, $(ASM1_SRC))
 OBJS1	:= $(ASM1_OBJ)
 
-# Second stage srcs & objects
+#
+# Second stage assembly and kernel loader
+#
 
-LD2_SRC	:= $(SRC_DIR)/bootloader/stage2/link.ld
+LD2_SRC	:= $(SRC_DIR)/bootloader/loader/link.ld
 
 ASM2_SRC	:= $(shell find $(BL2_DIR) -name "*.asm")
-C2_SRC	:= $(shell find $(BL2_DIR) $(JALIBC_DIR) -name "*.c")
+LOADER_SRC	:= $(shell find $(DRIVER_DIR) $(LOADER_DIR) $(JALIBC_DIR) -name "*.c")
 
 ASM2_OBJ  := $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.o, $(ASM2_SRC))
-C2_OBJ    := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(C2_SRC))
-OBJS2	:= $(ASM2_OBJ) $(C2_OBJ)
+LOADER_OBJ    := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(LOADER_SRC))
+OBJS2	:= $(ASM2_OBJ) $(LOADER_OBJ)
 
 OBJS_ALL	:= $(OBJS1) $(OBJS2)
 
@@ -64,14 +70,11 @@ $(FLOPPY): bootloader # kernel
 	@# Writes the bootloader in the boot section of the FAT file, not truncating the file
 	@dd if=$(BL1_BIN) of=$(FLOPPY) conv=notrunc
 
-	@# Copy the second stage of the bootloader as a filesystem in the root dir
-	@mcopy -i $(FLOPPY)	$(BL2_BIN) "::boot2.bin"
-
-	@# Copy the kernel
-	@#mcopy -i $(FLOPPY) $(KL_BIN) "::kernel.bin"
+	@# Copy the second stage and loader as a filesystem in the root dir
+	@mcopy -i $(FLOPPY) $(LOADER_BIN) "::loader.bin"
 
 # Bootloader Creation
-bootloader: $(BL1_BIN) $(BL2_BIN)
+bootloader: $(BL1_BIN) $(LOADER_BIN)
 
 $(BL1_BIN): $(LD1_SRC) $(OBJS1)
 	@mkdir -p $(dir $@)
@@ -79,10 +82,10 @@ $(BL1_BIN): $(LD1_SRC) $(OBJS1)
 	@$(T_LD) $(LD_FLAGS) $^ -o $@
 	@echo "Stage 1 built successfully."
 
-$(BL2_BIN): $(LD2_SRC) $(OBJS2)
+$(LOADER_BIN): $(LD2_SRC) $(OBJS2)
 	@mkdir -p $(dir $@)
 	@echo "	- Linking -> $@..."
-	$(T_LD) $(LD_FLAGS) $^ -o $@
+	@$(T_LD) $(LD_FLAGS) $^ -o $@
 	@echo "Stage 2 built successfully."
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.asm
