@@ -1,10 +1,13 @@
-#include <stdint.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
-#include <asm/io.h>
 #include <sys.h>
-#include "vga.h"
-#include "idt.h"
+#include <idt.h>
+#include <interrupts.h>
+#include <asm/io.h>
+#include <drivers/fat12.h>
+#include <drivers/vga.h>
+#include <drivers/pic.h>
 
 #define TAB_SPACES 4
 
@@ -13,13 +16,13 @@ void main() {
 
 	const char *ok = " Ok\n";
 	const char *init_lidt_msg = "Initializing LIDT...";
-     const char *ascii_logo = "\n   ____.  _____   ________    _________	\n"
+     /*const char *ascii_logo = "\n   ____.  _____   ________    _________	\n"
 						"    |    | /  _  \\  \\_____  \\  /   _____/\n"
 						"    |    |/  /_\\  \\  /   |   \\ \\_____  \\\n"
 						"/\\__|    /    |    \\/    |    \\/        \\\n"
 						"\\________\\____|__  /\\_______  /_______  /\n"
 						"                 \\/         \\/        \\/\n";
-
+	*/
 	// Entered Pmode successfully
 	printf(ok, GRAY);
 
@@ -27,9 +30,7 @@ void main() {
 	idt_init();
 	printf(ok, GRAY);
 
-	printf(ascii_logo, BLUE);
+	remap_pic(32);
 
-	printf("\n\nHello World\n", BLUE);
 	STOP;
 }
-

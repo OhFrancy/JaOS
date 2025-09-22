@@ -1,5 +1,5 @@
-#ifndef __STDIO_H__
-#define __STDIO_H__
+#ifndef __STDIO_H
+#define __STDIO_H
 
 #include <stdint.h>
 #include <stdbool.h>

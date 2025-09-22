@@ -1,9 +1,10 @@
-#include "idt.h"
+#include <idt.h>
 
 idt_entry_t idt_table[256];
 idtr_t	  idt_ptr;
 
 extern void *isr_stub_table[];
+extern void *irq_stub_table[];
 
 static inline void lidt(idtr_t *idtr)
 {
@@ -26,6 +27,12 @@ void idt_init()
 	for (int i = 0; i < 32; ++i) {
 		idt_set_gate(i, (uint32_t)isr_stub_table[i], 0x8, 0x8E);
 	}
+	
+	// Fill the table [32-47] with IRQs
+	for (int i = 0; i < 16; ++i) {
+		idt_set_gate(32 + i, (uint32_t)irq_stub_table[i], 0x8, 0x8E);
+	}
+
 
 	lidt(&idt_ptr);
 }

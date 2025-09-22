@@ -1,6 +1,8 @@
 [BITS 32]
 
-extern interrupt_handler
+extern isr_handler
+extern irq_handler
+
 global isr_stub
 isr_stub:
 	pushad
@@ -14,8 +16,8 @@ isr_stub:
 	mov gs, ax
 
 	push esp
-	call interrupt_handler
-	pop esp
+	call isr_handler
+	pop  esp
 
 	pop eax
 	mov ds, ax
@@ -23,17 +25,59 @@ isr_stub:
 	mov fs, ax
 	mov gs, ax
 
-     popad
-     add esp, 0x8
+     	popad
+     	add esp, 0x8
 
 	iret
 
+global irq_stub
+irq_stub:
+	pusha
+	mov ax, ds
+	push	eax
+
+	mov ax, 0x10
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+
+	push esp
+	call irq_handler
+	pop esp
+	
+	mov al, 0x20
+	out 0xA0, al
+	out 0x20, al
+
+	pop eax
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+	
+	popa
+	add esp, 0x8
+	iret
+
 %macro ISR_NO_ERR_CODE 1
-isr%+%1:
-	push byte 0
-	push byte %1
-	jmp isr_stub
+	global isr%1
+	isr%1:
+		cli
+		push byte 0
+		push byte %1
+		jmp isr_stub
 %endmacro
+
+%macro IRQ 2
+	global irq%1
+	irq%1:
+		cli
+		push byte 0
+		push byte %2
+		jmp irq_stub
+%endmacro
+
 
 %macro ISR_ERR_CODE 1
 isr%+%1:
@@ -76,10 +120,35 @@ ISR_NO_ERR_CODE 29
 ISR_NO_ERR_CODE 30
 ISR_NO_ERR_CODE 31
 
+IRQ 0, 32
+IRQ 1, 33
+IRQ 2, 34
+IRQ 3, 35
+IRQ 4, 36
+IRQ 5, 37
+IRQ 6, 38
+IRQ 7, 39
+IRQ 8, 40
+IRQ 9, 41
+IRQ 10, 42
+IRQ 11, 43
+IRQ 12, 44
+IRQ 13, 45
+IRQ 14, 46
+IRQ 15, 47
+
 global isr_stub_table
 isr_stub_table:
 %assign i 0
 %rep    32
-    dd isr%+i
+    	dd isr%+i
+%assign i i+1
+%endrep
+
+global irq_stub_table
+irq_stub_table:
+%assign i 0
+%rep 	16
+	dd irq%+i
 %assign i i+1
 %endrep

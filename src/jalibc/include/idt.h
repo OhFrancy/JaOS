@@ -1,5 +1,5 @@
-#ifndef __IDT_H__
-#define __IDT_H__
+#ifndef __IDT_H
+#define __IDT_H
 
 #define C_SELECTOR 0x08
 #define IDT_FLAG   0x8E

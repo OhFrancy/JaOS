@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
-#include <vga.h>
+#include <drivers/vga.h>
 
 #define STR_BUFFER   2048
 

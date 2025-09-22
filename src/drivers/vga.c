@@ -1,4 +1,4 @@
-#include "vga.h"
+#include <drivers/vga.h>
 #include <asm/io.h>
 
 static volatile uint8_t *video = VGA_PTR;

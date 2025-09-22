@@ -1,5 +1,5 @@
-#ifndef __MEMSET_H__
-#define __MEMSET_H__
+#ifndef __MEMSET_H
+#define __MEMSET_H
 
 #include <stdint.h>
 
