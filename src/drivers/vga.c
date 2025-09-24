@@ -1,3 +1,12 @@
+/*
+ * Implementation for the driver to write to the screen, used for printf.
+ *
+ *
+ *         Copyright (c) 2025 Francesco Lauro. All rights reserved.
+ *         SPDX-License-Identifier: MIT
+ */
+
+
 #include <drivers/vga.h>
 #include <asm/io.h>
 
