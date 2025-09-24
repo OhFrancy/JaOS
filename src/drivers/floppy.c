@@ -16,7 +16,6 @@ enum {
 static uint8_t irq_done = 0;
 static uint8_t active_drive = 0;
 
-
 void floppy_init() 
 { 
 	// Send the version command to make sure the FDC is 82077AA
@@ -35,13 +34,6 @@ void floppy_init()
 	outb(LOCK, 0x94);
 	
 	floppy_reset();
-	
-	// Set 500KB datarate (1.44MB floppy)
-	outb(0, CCR);
-
- 	// These are specific safe values for a 1.44MB, 3.5 inch floppy disk. (NDMA to 0 = DMA ON)
-	floppy_specify(8, 5, 0, 0);
-
 	floppy_recalibrate();
 
 }
@@ -84,6 +76,12 @@ void floppy_reset()
 	fdc_enable();
 	
 	wait_floppy_irq();
+
+	// Set 500KB datarate (1.44MB floppy)
+	outb(0, CCR);
+
+ 	// These are specific safe values for a 1.44MB, 3.5 inch floppy disk. (NDMA to 0 = DMA ON)
+	floppy_specify(8, 5, 0, 0);
 }
 
 void floppy_irq_handle(interrupt_frame_t *rg) 
