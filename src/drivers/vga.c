@@ -6,7 +6,6 @@
  *         SPDX-License-Identifier: MIT
  */
 
-
 #include <drivers/vga.h>
 #include <asm/io.h>
 
@@ -42,11 +41,11 @@ void print_char(unsigned char ch, uint8_t colour)
 
 void enable_cursor(uint8_t cursor_start, uint8_t cursor_end)
 {
-     outb(0x0A, CRT_ADDR);
-     outb((inb(0x3D5) & 0xC0) | cursor_start, CRT_DATA);
+     outb(CRT_ADDR, 0x0A);
+     outb(CRT_DATA, (inb(0x3D5) & 0xC0) | cursor_start);
 
-     outb(0x0B, CRT_ADDR);
-     outb((inb(0x3D5) & 0xE0) | cursor_end, CRT_DATA);
+     outb(CRT_ADDR, 0x0B);
+     outb(CRT_DATA, (inb(0x3D5) & 0xE0) | cursor_end);
 }
 
 uint16_t get_cursor_x(uint16_t pos)
@@ -62,9 +61,9 @@ uint16_t get_cursor_y(uint16_t pos)
 uint16_t get_cursor_pos()
 {
     uint16_t pos = 0;
-    outb(0x0F, CRT_ADDR);
+    outb(CRT_ADDR, 0x0F);
     pos |= inb(CRT_DATA);
-    outb(0x0E, CRT_ADDR);
+    outb(CRT_ADDR, 0x0E);
     pos |= ((uint16_t) inb(CRT_DATA)) << 8;
     return pos;
 }
@@ -74,10 +73,10 @@ void move_cursor(uint16_t col, uint16_t row)
 	uint16_t pos = (row * VGA_W) + col;
 
 	// Cursor Low port
-	outb(0x0F, CRT_ADDR);
-	outb((uint16_t)(pos & 0xFF), CRT_DATA);
+	outb(CRT_ADDR, 0x0F);
+	outb(CRT_DATA, (uint16_t)(pos & 0xFF));
 
 	// Cursor High port
-	outb(0x0E, CRT_ADDR);
-	outb((uint16_t)((pos >> 8) & 0xFF), CRT_DATA);
+	outb(CRT_ADDR, 0x0E);
+	outb(CRT_DATA, (uint16_t)((pos >> 8) & 0xFF));
 }

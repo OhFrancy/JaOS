@@ -1,5 +1,5 @@
 /*
- * Implementation of the File system driver, so that we can manage files and load them onto memory
+ * Implementation of the File system driver, so that we can manage files
  *
  *         Copyright (c) 2025 Francesco Lauro. All rights reserved.
  *         SPDX-License-Identifier: MIT
