@@ -4,10 +4,11 @@
 #	Copyright (c) 2025 Francesco Lauro. All rights reserved.
 #	SPDX-License-Identifier: MIT
 #
-include scripts/config.mk
+include src/miscellaneous/config.mk
 
 BUILD_DIR  := build
 SRC_DIR	 := src
+MISC_DIR := src/miscellaneous
 
 FLOPPY 	 := $(BUILD_DIR)/jaos.img
 
@@ -24,7 +25,7 @@ LOADER_BIN	 := $(BUILD_DIR)/loader/loader.bin
 
 ASM_FLAGS := -f elf32
 LD_FLAGS  := -T
-CC_FLAGS  := -ffreestanding -nostdlib -g -c -Wall -Wextra -Werror -Werror=format-security -I$(JALIBC_INCLUDE) -MMD -MP
+CC_FLAGS  := -ffreestanding -nostdlib -g -c -Wall -Wextra -Werror -Werror=format-security -I$(JALIBC_INCLUDE) -MMD -MP 
 
 #
 # First stage srcs & objects
@@ -56,9 +57,9 @@ DEPS		:= $(OBJS_ALL:.o=.d)
 
 build: clean install_deps build_toolchain
 
-include scripts/toolchain.mk
+include $(MISC_DIR)/toolchain.mk
 install_deps:
-	@scripts/install_deps.sh
+	@$(MISC_DIR)/install_deps.sh
 
 $(FLOPPY): bootloader # kernel
 	@echo "Creating the floppy disk image..."
@@ -72,6 +73,8 @@ $(FLOPPY): bootloader # kernel
 
 	@# Copy the second stage and loader as a filesystem in the root dir
 	@mcopy -i $(FLOPPY) $(LOADER_BIN) "::loader.bin"
+
+	@mcopy -i $(FLOPPY) $(SRC_DIR)/t.bin "::t.bin"
 
 # Bootloader Creation
 bootloader: $(BL1_BIN) $(LOADER_BIN)
@@ -112,7 +115,7 @@ build_toolchain:
 # Run script, currently emulated with QEMU
 #
 run: $(FLOPPY)
-	@scripts/run_qemu.sh
+	@$(MISC_DIR)/run_qemu.sh
 
 makedir:
 	@mkdir -p $(BUILD_DIR)

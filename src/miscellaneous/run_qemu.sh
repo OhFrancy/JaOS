@@ -5,7 +5,7 @@
 #	SPDX-License-Identifier: MIT
 #
 
-. scripts/config.sh
+. src/miscellaneous/config.sh
 
 argv=$@
 argc=$#

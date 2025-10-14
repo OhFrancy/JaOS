@@ -1,21 +1,22 @@
 #include <asm/io.h>
 
-void outb(uint8_t value, uint16_t port)
+void outb(uint16_t port, uint8_t value)
 {
 	asm volatile("outb %b0, %w1" : : "a"(value), "Nd"(port) : "memory");
 }
 
-void outw(uint16_t value, uint16_t port)
+void outw(uint16_t port, uint16_t value)
 {
 	asm volatile("outw %w0, %w1" : : "a"(value), "Nd"(port) : "memory");
 }
 
-void outl(uint32_t value, uint16_t port)
+void outl(uint16_t port, uint32_t value)
 {
 	asm volatile("outl %0, %w1" : : "a"(value), "Nd"(port) : "memory");
 }
 
-uint8_t inb(uint16_t port) {
+uint8_t inb(uint16_t port) 
+{
 	uint8_t ret;
 	asm volatile("inb %w1, %0" : "=a"(ret) : "Nd"(port) : "memory");
 	return ret;

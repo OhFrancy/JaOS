@@ -17,14 +17,15 @@ void init_video(uint8_t col)
 	for (int i = 0; i < VGA_W * VGA_L; ++i) {
 		print_char(' ', col);
 	}
-     move_cursor(0, 0);
+     	move_cursor(0, 0);
 }
 
 
 void print_char(unsigned char ch, uint8_t colour)
 {
-     uint16_t curr_pos = get_cursor_pos();
-     video = VGA_PTR + (curr_pos * 2);
+     	uint16_t curr_pos = get_cursor_pos();
+     	video = VGA_PTR + (curr_pos * 2);
+	
 	if (ch == '\n') {
 		move_cursor(0, get_cursor_y(curr_pos) + 1);
 	}
@@ -37,6 +38,7 @@ void print_char(unsigned char ch, uint8_t colour)
 		*video++ = colour;
 		move_cursor(get_cursor_x(curr_pos) + 1, get_cursor_y(curr_pos));
 	}
+
 }
 
 void enable_cursor(uint8_t cursor_start, uint8_t cursor_end)

@@ -1,12 +1,11 @@
 #include <string.h>
 
-size_t strlen(const char *str, size_t max_sz)
+size_t strlen(const char *str)
 {
-	char *end;
-	if ((end = memchr(str, '\0', max_sz)) == NULL) {
-		return max_sz;
-	}
-	return end - str;
+	const char *s = str;
+
+	for (; *s; ++s);
+	return s - str;
 }
 
 void *memchr(const void *str, char ch, size_t n)

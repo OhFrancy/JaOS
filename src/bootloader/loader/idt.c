@@ -33,7 +33,5 @@ void idt_init()
 		idt_set_gate(32 + i, (uint32_t)irq_stub_table[i], 0x8, 0x8E);
 	}
 
-
 	lidt(&idt_ptr);
 }
-

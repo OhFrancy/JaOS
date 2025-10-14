@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <sys.h>
-#include <drivers/vga.h>
 #include <interrupts.h>
 #include <drivers/pic.h>
 
@@ -52,7 +51,7 @@ void isr_handler(interrupt_frame_t *rg)
 }
 
 /*
- * We are registering the function that will handle that specific IRQ so that we can later fetch it from the array and call it
+ * We are registering the function that will handle that specific IRQ, so that we can later fetch it from the array and call it
  */
 void register_irq(uint32_t irq_no, irq_handler_t handler) 
 {

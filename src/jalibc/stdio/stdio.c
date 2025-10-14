@@ -26,7 +26,7 @@ static int write_str(char *s, uint8_t colour) {
 		write_ch(*s, colour);
 	}
 
-	return strlen(s, STR_BUFFER);
+	return strlen(s);
 }
 
 static void divide_64bit(uint64_t n, uint32_t base, uint64_t *quotient, uint32_t *remainder)
@@ -77,15 +77,11 @@ static int write_digit(long long int n, uint32_t base, uint8_t div_size, uint8_t
 	return write_str(buffer, colour);
 }
 
-int printf(const char *fmt, uint8_t colour, ...)
+int vprintf(const char *fmt, uint8_t colour, va_list args) 
 {
-	va_list args;
 	int count;
 
 	uint8_t state = STATE_NORMAL;
-
-	va_start(args, colour);
-
 	for(;*fmt; ++fmt) {
 		switch (state) {
 			case STATE_NORMAL:
@@ -105,7 +101,7 @@ int printf(const char *fmt, uint8_t colour, ...)
 						count += write_ch(va_arg(args, int), colour);
 						break;
 					case 'd':
-						count += write_digit(va_arg(args, int64_t), DECIMAL, SIZE_32, colour);
+						count += write_digit(va_arg(args, int), DECIMAL, SIZE_32, colour);
 						break;
 					case 'x':
 						count += write_str("0x", colour);
@@ -118,6 +114,16 @@ int printf(const char *fmt, uint8_t colour, ...)
 				state = STATE_NORMAL;
 		}
 	}
+	return count;
+
+}
+
+int printf(const char *fmt, uint8_t colour, ...)
+{
+	va_list args;
+	int count = 0;
+	va_start(args, colour);
+	count = vprintf(fmt, colour, args);
 	va_end(args);
 
 	return count;

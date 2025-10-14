@@ -5,8 +5,7 @@
 #include <idt.h>
 #include <interrupts.h>
 #include <asm/io.h>
-#include <drivers/fat12.h>
-#include <drivers/vga.h>
+#include <drivers/fat.h>
 #include <drivers/pic.h>
 
 #define TAB_SPACES 4
@@ -30,7 +29,9 @@ void main() {
 	idt_init();
 	printf(ok, GRAY);
 
-	remap_pic(32);
+	remap_pic(0x20);
+	asm volatile("sti");
 
+	fat12_init();
 	STOP;
 }

@@ -11,7 +11,6 @@
 #include <sys.h>
 #include <log.h>
 #include <interrupts.h>
-#include <drivers/vga.h>
 #include <drivers/floppy.h>
 #include <asm/io.h>
 

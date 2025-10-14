@@ -2,11 +2,9 @@
 #define __STRING_H
 
 #include <stddef.h>
+#include <mem.h>
 
-/*
- * Implemented using memchr, will read till max_sz, if string is not valid, returns max_sz;
- */
-size_t strlen(const char *str, size_t max_sz);
+size_t strlen(const char *str);
 
 /*
  * Poorly optimized implementation of memchr, wrote in C, loops one by one, no inline assembly,
