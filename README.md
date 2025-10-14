@@ -88,16 +88,23 @@ If the error persists, you can open a **Github Issue** and report it.
 
 **Multi-stage bootloader**
 - [x] Set up the bootloader's first stage
-- [x] Read and load from disk, using the BIOS
+- [x] Read and load from disk, thro the BIOS
 - [x] Enter second stage (out of bootsector)
-- [x] Build a working GDT (Global Descriptor Table)
+- [x] Build a working GDT
 - [x] Enter Protected mode 32-bits, segmented memory
-- [x] Build a working IDT (Interrupt Descriptor Table)
-- [x] Remap the PIC
-- [x] Handle IRQs
-- [ ] Write a FDC Driver
-- [ ] Write a FAT12 Driver upon the FDC Driver
+- [ ] Add FAT32 support, other than FAT12, to the bootloader (with HDD support)
+
+  ###### Kernel Loader
+  - [x] Build a working IDT
+  - [x] Remap the PIC
+  - [x] Handle IRQs
+  - [x] Write a FDC Driver
+  - [ ] Write a PATA Driver
+  - [ ] Write a FAT12 Driver upon the FDC Driver
+  - [ ] Write a FAT32 Driver upon the PATA Driver
+
 **Kernel**
+
 
 <p align="right">(<a href="#readme-top">top</a>)</p>
 
