@@ -1,9 +1,7 @@
 <a name="readme-top"></a>
 
-<!-- SETS THE LINES COUNTER, SEE 'tokei' ON GITHUB FOR MORE INFO -->
 [![Lines of Code][tokei-url]][repo-url]
 
-<!-- UPCOMING LOGO -->
 <div>
 <h1 align="center">JaOS</h1>
 
@@ -26,13 +24,10 @@
   </ol>
 </details>
 
-<!-- ABOUT THE PROJECT -->
 ## The Project
 <a name="about"></a>
 
-<!-- Image here -->
-
-**JaOS is a hobby operating system**, in really early development, developed using C and ASM. The Operating System is far from being ready to use for any real-life purpose.
+**JaOS is a hobby operating system**, in really early development, developed using C and ASMx86. The Operating System is far from being ready to use for any real-life purpose.
 
 For supported OS and Distributions, please check **<a href="#compatibility">Compatibility</a>**.
 
@@ -42,9 +37,13 @@ This is completely a hobby project and was not born as a product.
 ### Requisites for building
 <a name="requisites"></a>
 
-The project was built with the idea of automating as much as possible, every dependency requirement will be handled through the building process.
+Through the initial development, if you came want to try the OS, you can build the image and run it on QEMU through a process automated by the makefiles/scripts.
 
-Though, to get started, you must clone and cd into the repository through git, either with **HTTPS**:
+Every dependency requirement will try to be handled through scripts, be aware that there could be some compatibility errors as it's not fully tested.
+
+---------------
+
+To get started, you must clone and cd into the repository through git, either with **HTTPS**:
 ```
 git clone https://github.com/OhFrancy/JaOS.git && cd JaOS
 ```
@@ -52,6 +51,8 @@ or **SSH**:
 ```
 git clone git@github.com:OhFrancy/JaOS.git && cd JaOS
 ```
+(Alternatively you can download it through your browser and cd into it).
+
 For the building process to start, you must also install **make**, to do so on Ubuntu/Debian:
 ```
 sudo apt install make
@@ -62,11 +63,11 @@ I can't list all packet managers here, so please, search for yours online.
 ### Build & Installation
 <a name="installation"></a>
 
-To build **JaOS** you can simply run:
+To build **JaOS** you must simply run:
 ```
 make build
 ```
-If this is your first time building the Operating System, it'll take some extra time to install the dependencies and build the toolchain.
+If this is your first time building the OS, it'll take some extra time to install the dependencies and build the toolchain.
 
 Now you're ready to run the OS, it currently uses **QEMU** to do so, simply run:
 ```
@@ -88,45 +89,38 @@ If the error persists, you can open a **Github Issue** and report it.
 
 **Multi-stage bootloader**
 - [x] Set up the bootloader's first stage
-- [x] Read and load from disk, using the BIOS
+- [x] Read and load from disk, thro the BIOS
 - [x] Enter second stage (out of bootsector)
-- [x] Build a working GDT (Global Descriptor Table)
+- [x] Build a working GDT
 - [x] Enter Protected mode 32-bits, segmented memory
-- [x] Build a working IDT (Interrupt Descriptor Table)
-- [x] Remap the PIC
-- [x] Handle IRQs
-- [ ] Write a FDC Driver
-- [ ] Write a FAT12 Driver upon the FDC Driver
+- [ ] Add another middle bootloader stage, to handle the file-loading in FAT32 with less restrictions 
+
+  ###### Kernel Loader
+  - [x] Build a working IDT
+  - [x] Remap the PIC
+  - [x] Handle IRQs
+  - [ ] Write a PATA Driver
+  - [ ] Write a FAT32 Driver upon the PATA Driver
+
 **Kernel**
+
+-- Coming
+
 
 <p align="right">(<a href="#readme-top">top</a>)</p>
 
 <!-- CONTRIBUTING -->
 ## Contributing
 
-Contributions are really important for this project, and learning purposes, it helps both you and me!
+Contributions are really important for this project, and learning purposes.
 
-Any contribution you make is **really appreciated**.
-
-If you think you have something to add to the project, that would make it better, fork the repo and make a pull request.
-
-Remember to give the repository a **star**, as it'd help to involve and interest more people towards the project!
-
-How to contribute with git: (if you are still not sure, search for a tutorial online, there are a lot!)
-
-0. Fork the Project
-1. Create your branch (`git checkout -b AmazingFeature`)
-2. Commit your changes (`git commit -m 'Add AmazingFeature, ...(add more info)'`)
-3. Push to the branch (`git push origin AmazingFeature`)
-4. Open a pull request
-
-After this, your PR will be checked: if found with no conflicts and a useful request, it will be merged to the project.
+Any contribution you make is **really appreciated**, just make sure you know what you are doing, useless PRs will be rejected.
 
 ## Compatibility
 <a name="compatibility"></a>
-**JaOS** currently only supports **Linux distributions** for the installation process.
+**JaOS** currently only supports **Linux distributions**.
 
-It does **NOT** support **Windows** and **MacOS**, even though in the near future I'm hoping to have that.
+It does **NOT** support **Windows** and **MacOS** for the development build installation process, and I don't think it'll ever support them.
 
 Here is a list of currently known supported Linux distributions:
 -  Ubuntu/Debian,
