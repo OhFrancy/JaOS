@@ -7,8 +7,8 @@
 #	SPDX-License-Identifier: MIT
 #
 
-. scripts/config.sh
-. scripts/detect_distro.sh
+. src/miscellaneous/config.sh
+. src/miscellaneous/detect_distro.sh
 
 DISTRO=
 CHECK=

@@ -27,11 +27,12 @@ void main() {
 
 	printf(init_lidt_msg, GRAY);
 	idt_init();
+	
 	printf(ok, GRAY);
+
 
 	remap_pic(0x20);
 	asm volatile("sti");
 
-	fat12_init();
 	STOP;
 }

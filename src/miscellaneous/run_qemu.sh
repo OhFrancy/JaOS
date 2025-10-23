@@ -7,22 +7,27 @@
 
 . src/miscellaneous/config.sh
 
-argv=$@
-argc=$#
-
 DISK_IMG=jaos.img
-MEDIA=build/$DISK_IMG	# Bootable image
+MEDIA=build/$DISK_IMG			# Bootable image
 ARCH=i386				# Architecture
 RAM=4196M				# MBs
 CPU=core2duo
 
 echo "Running $MEDIA through QEMU"
 
-# Run arguments
-qemu-system-$ARCH \
--cpu host \
--accel kvm \
--m $RAM \
--drive file=$MEDIA,format=raw,if=floppy \
--device VGA
-
+if [ "$2" = "debug" ]; then
+	qemu-system-$ARCH \
+	-cpu host \
+	-accel kvm \
+	-m $RAM \
+	-drive file=$MEDIA,format=raw,if=$1 \
+	-s -S \
+	-device VGA
+else
+	qemu-system-$ARCH \
+	-cpu host \
+	-accel kvm \
+	-m $RAM \
+	-drive file=$MEDIA,format=raw,if=$1 \
+	-device VGA
+fi
