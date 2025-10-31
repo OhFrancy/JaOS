@@ -24,13 +24,13 @@ BOOT_SO		:= $(BUILD_DIR)/boot/main.so
 
 KERNEL		:= $(BUILD_DIR)/kernel/kernel.elf
 
-EFI_INC		:= $(EFI_DIR)/inc
+EFI_INC		:= /usr/include/efi
 
 ASM_FLAGS	:= -f elf64
 CC_FLAGS	:= -fpic -ffreestanding -nostdlib -g -c -Wall -Wextra -I$(INCLUDE_DIR) -I$(EFI_INC) -MMD -MP -fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone
 OBJC_FLAGS	:= -j .text -j .sdata -j .data -j .rodata -j .dynamic -j .dynsym  -j .rel -j .rela -j .rel.* -j .rela.* -j .reloc --target efi-app-x86_64 --subsystem=10
 
-LD_FLAGS_BOOT	:= -shared -Bsymbolic -L$(EFI_DIR)/x86_64/lib -L$(EFI_DIR)/x86_64/gnuefi -z noexecstack -T 
+LD_FLAGS_BOOT	:= -shared -Bsymbolic -L$(EFI_DIR) -z noexecstack -T 
 LD_FLAGS_KERNEL	:= -T 
 
 #
@@ -38,7 +38,7 @@ LD_FLAGS_KERNEL	:= -T
 #
 BOOT_SRC	:= $(shell find $(BOOT_DIR) -name "*.c")
 BOOT_OBJ	:= $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(BOOT_SRC))
-BOOT_LD		:= $(EFI_DIR)/gnuefi/elf_x86_64_efi.lds $(EFI_DIR)/x86_64/gnuefi/crt0-efi-x86_64.o 
+BOOT_LD		:= $(EFI_DIR)/elf_x86_64_efi.lds $(EFI_DIR)/crt0-efi-x86_64.o 
 #
 # Kernel, drivers and libc srcs & objs
 #
