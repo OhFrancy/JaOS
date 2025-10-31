@@ -27,7 +27,7 @@
 ## The Project
 <a name="about"></a>
 
-**JaOS is a hobby operating system**, in really early development, developed using C and ASMx86. The Operating System is far from being ready to use for any real-life purpose.
+**JaOS is a hobby operating system (UEFI-based)**, in really early development, developed using C and ASMx86. The Operating System is far from being ready to use for any real-life purpose.
 
 For supported OS and Distributions, please check **<a href="#compatibility">Compatibility</a>**.
 
@@ -37,7 +37,7 @@ This is completely a hobby project and was not born as a product.
 ### Requisites for building
 <a name="requisites"></a>
 
-Through the initial development, if you came want to try the OS, you can build the image and run it on QEMU through a process automated by the makefiles/scripts.
+Through the initial development, if you eant to try the OS, you can build the image and run it on QEMU through a process automated by the makefiles/scripts.
 
 Every dependency requirement will try to be handled through scripts, be aware that there could be some compatibility errors as it's not fully tested.
 
@@ -69,7 +69,7 @@ make build
 ```
 If this is your first time building the OS, it'll take some extra time to install the dependencies and build the toolchain.
 
-Now you're ready to run the OS, it currently uses **QEMU** to do so, simply run:
+Now you're ready to run the OS, it currently uses QEMU + OVMF to do so, simply run:
 ```
 make run
 ```
@@ -87,20 +87,12 @@ If the error persists, you can open a **Github Issue** and report it.
 ## JaOS Roadmap
 <a name="roadmap"></a>
 
-**Multi-stage bootloader**
-- [x] Set up the bootloader's first stage
-- [x] Read and load from disk, thro the BIOS
-- [x] Enter second stage (out of bootsector)
-- [x] Build a working GDT
-- [x] Enter Protected mode 32-bits, segmented memory
-- [ ] Add another middle bootloader stage, to handle the file-loading in FAT32 with less restrictions 
-
-  ###### Kernel Loader
-  - [x] Build a working IDT
-  - [x] Remap the PIC
-  - [x] Handle IRQs
-  - [ ] Write a PATA Driver
-  - [ ] Write a FAT32 Driver upon the PATA Driver
+**UEFI Boot**
+- [ ] Load kernel
+- [ ] Allocate Pages
+- [ ] Initialize GOP
+- [ ] Get memory map
+- [ ] Exit boot services and jump to kernel
 
 **Kernel**
 
@@ -134,4 +126,5 @@ Distributed under the MIT License. [LICENSE](LICENSE) for more info.
 <!-- IMAGES & LINKS -->
 [tokei-url]: https://tokei.rs/b1/github/OhFrancy/JaOS?style=for-the-badge
 [repo-url]: https://github.com/OhFrancy/JaOS
+
 

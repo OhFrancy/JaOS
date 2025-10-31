@@ -4,135 +4,126 @@
 #	Copyright (c) 2025 Francesco Lauro. All rights reserved.
 #	SPDX-License-Identifier: MIT
 #
-include src/miscellaneous/config.mk
+include src/scripts/config.mk
 
-BUILD_DIR  := build
-SRC_DIR	 := src
-MISC_DIR := src/miscellaneous
-BL1_DIR	 := $(SRC_DIR)/bootloader/stage1
-BL2_DIR	 := $(SRC_DIR)/bootloader/stage2
-BL1_5_DIR := $(SRC_DIR)/bootloader/stage1_5
-LOADER_DIR := $(SRC_DIR)/bootloader/kernel_loader
-DRIVER_DIR := $(SRC_DIR)/drivers
+BUILD_DIR	:= build
+SRC_DIR		:= src
+
+SCRIPTS_DIR	:= $(SRC_DIR)/scripts
+BOOT_DIR	:= $(SRC_DIR)/boot
+KERNEL_DIR	:= $(SRC_DIR)/kernel
+DRIVER_DIR	:= $(SRC_DIR)/drivers
 JALIBC_DIR	:= $(SRC_DIR)/jalibc
+INCLUDE_DIR	:= $(SRC_DIR)/include
+EFI_DIR		:= gnu-efi
 
-HDD_IMG	 := $(BUILD_DIR)/jaos.img
+DISK_IMG	:= $(BUILD_DIR)/jaos.img
 
-JALIBC_INCLUDE := $(JALIBC_DIR)/include
+BOOT		:= $(BUILD_DIR)/boot/BOOTX64.EFI
+BOOT_SO		:= $(BUILD_DIR)/boot/main.so
 
-BL1_BIN 	 := $(BUILD_DIR)/stage1/boot1.bin
-BL1_5_BIN	 := $(BUILD_DIR)/stage1_5/boot1_5.bin
-LOADER_BIN	 := $(BUILD_DIR)/kernel_loader/loader.bin
+KERNEL		:= $(BUILD_DIR)/kernel/kernel.elf
 
-ASM_FLAGS := -f elf
-LD_FLAGS  := -T
-CC_FLAGS  := -ffreestanding -nostdlib -g -c -Wall -Wextra -Werror -Werror=format-security -I$(JALIBC_INCLUDE) -MMD -MP 
+EFI_INC		:= $(EFI_DIR)/inc
 
-#
-# First stage srcs & objects
-#
-LD1_SRC	  := $(BL1_DIR)/link.ld
-ASM1_SRC  := $(shell find $(BL1_DIR) -name "*.asm")
-ASM1_OBJ  := $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.o, $(ASM1_SRC))
-OBJS1	  := $(ASM1_OBJ)
+ASM_FLAGS	:= -f elf64
+CC_FLAGS	:= -fpic -ffreestanding -nostdlib -g -c -Wall -Wextra -I$(INCLUDE_DIR) -I$(EFI_INC) -MMD -MP -fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone
+OBJC_FLAGS	:= -j .text -j .sdata -j .data -j .rodata -j .dynamic -j .dynsym  -j .rel -j .rela -j .rel.* -j .rela.* -j .reloc --target efi-app-x86_64 --subsystem=10
+
+LD_FLAGS_BOOT	:= -shared -Bsymbolic -L$(EFI_DIR)/x86_64/lib -L$(EFI_DIR)/x86_64/gnuefi -z noexecstack -T 
+LD_FLAGS_KERNEL	:= -T 
 
 #
-# 1.5 Stage srcs & objects
+# UEFI Bootloader srcs & objs
 #
-LD1_5_SRC  := $(BL1_5_DIR)/link.ld
-ASM1_5_SRC := $(shell find $(BL1_5_DIR) -name "*.asm")
-ASM1_5_OBJ := $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.o, $(ASM1_5_SRC))
-OBJS1_5    := $(ASM1_5_OBJ)
-
+BOOT_SRC	:= $(shell find $(BOOT_DIR) -name "*.c")
+BOOT_OBJ	:= $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(BOOT_SRC))
+BOOT_LD		:= $(EFI_DIR)/gnuefi/elf_x86_64_efi.lds $(EFI_DIR)/x86_64/gnuefi/crt0-efi-x86_64.o 
 #
-# Second stage assembly and kernel loader
+# Kernel, drivers and libc srcs & objs
 #
-LD2_SRC	:= $(LOADER_DIR)/link.ld
+KERNEL_SRC_ALL	:= $(shell find $(KERNEL_DIR) -name "*.c")
+KERNEL_OBJ	:= $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(KERNEL_SRC_ALL))
+KERNEL_LD	:= $(KERNEL_DIR)/link.ld
 
-ASM2_SRC	:= $(shell find $(BL2_DIR) -name "*.asm")
-LOADER_SRC	:= $(shell find $(DRIVER_DIR) $(LOADER_DIR) $(JALIBC_DIR) -name "*.c")
-
-ASM2_OBJ  	:= $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.o, $(ASM2_SRC))
-LOADER_OBJ      := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(LOADER_SRC))
-OBJS2		:= $(ASM2_OBJ) $(LOADER_OBJ)
-
-OBJS_ALL	:= $(OBJS1) $(OBJS1_5) $(OBJS2)
+OBJS_ALL	:= $(BOOT_OBJ) $(KERNEL_OBJ)
 DEPS		:= $(OBJS_ALL:.o=.d)
 
-build: clean install_deps build_toolchain
+.PHONY: all clean build install_deps run run_d build_toolchain bootloader kernel
 
-.PHONY: all clean build install_deps run run_d build_toolchain
+all: $(DISK_IMG)
 
-include $(MISC_DIR)/toolchain.mk
+include $(SCRIPTS_DIR)/toolchain.mk
 
-$(HDD_IMG): bootloader
-	@echo "Creating the hard disk image..."
-	@dd if=/dev/zero of=$(HDD_IMG) bs=512 count=204800
+$(DISK_IMG): bootloader kernel
+	@echo "Creating the image..."
+	@mkdir -p $(BUILD_DIR)
+	@dd if=/dev/zero of=$@ bs=1M count=100 status=none
 	
-	@# Converts it to FAT32
-	@mkfs.fat -F 32 -n "JAOS" $(HDD_IMG)
+	@echo "Formatting as FAT32..."
+	@mkfs.fat -F 32 -n "JAOS" $@ > /dev/null 2>&1
 	
-	@#Load stage 1
-	@dd if=$(BL1_BIN) of=$(HDD_IMG) bs=512 count=1 conv=notrunc
-
-	@#Load stage 1.5
-	@dd if=$(BL1_5_BIN) of=$(HDD_IMG) bs=512 seek=2 conv=notrunc
-
-	@# Copy the second stage and loader as a filesystem in the root dir
-	@mcopy -i $(HDD_IMG) $(LOADER_BIN) "::/loader.bin"
-
-# Bootloader Creation
-bootloader: $(BL1_BIN) $(BL1_5_BIN) $(LOADER_BIN)
-
-$(BL1_BIN): $(LD1_SRC) $(OBJS1)
-	@mkdir -p $(dir $@)
-	@echo "	- Linking -> $@..."
-	@$(T_LD) $(LD_FLAGS) $^ -o $@
-	@echo "Stage 1 built successfully."
+	@echo "Creating EFI directory structure..."
+	@mmd -i $@ ::/EFI
+	@mmd -i $@ ::/EFI/BOOT
 	
-$(BL1_5_BIN): $(LD1_5_SRC) $(OBJS1_5)
-	@mkdir -p $(dir $@)
-	@echo "	- Linking -> $@..."
-	@$(T_LD) $(LD_FLAGS) $^ -o $@
-	@echo "Stage 1.5 built successfully."
+	@echo "Copying bootloader..."
+	@mcopy -i $@ $(BOOT) "::/EFI/BOOT/BOOTX64.EFI"
+	
+	@echo "Copying kernel..."
+	@mcopy -i $@ $(KERNEL) "::/kernel.elf"
+	
+	@echo "Disk image created: $@"
 
-$(LOADER_BIN): $(LD2_SRC) $(OBJS2)
-	@mkdir -p $(dir $@)
-	@echo "	- Linking -> $@..."
-	@$(T_LD) $(LD_FLAGS) $^ -o $@
-	@echo "Stage 2 built successfully."
+bootloader: $(BOOT)
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.asm
+$(BOOT): $(BOOT_LD) $(BOOT_OBJ)
 	@mkdir -p $(dir $@)
-	@echo "	- Assembling $< -> $@..."
-	@$(ASM) $(ASM_FLAGS) $< -o $@
+	@echo "Building UEFI Bootloader:"
+	@echo "		- Linking $^ -> $(BOOT_SO)"
+	@$(T_LD) $(LD_FLAGS_BOOT) $^ -o $(BOOT_SO) -lgnuefi -lefi
+	@echo "		- Object copying $(BOOT_SO) -> $@"
+	@$(OBJC) $(OBJC_FLAGS) $(BOOT_SO) $@
+	@echo "UEFI Bootloader built successfully."
+
+kernel: $(KERNEL)
+
+$(KERNEL): $(KERNEL_LD) $(KERNEL_OBJ)
+	@mkdir -p $(dir $@)
+	@echo "Building kernel:"
+	@echo "		- Linking $^ -o $@"
+	@$(T_LD) $(LD_FLAGS_KERNEL) $^ -o $@
+	@echo "Kernel built successfully."
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	@echo "	- Compiling $< -> $@..."
+	@echo "Compiling $< -> $@"
 	@$(T_CC) $(CC_FLAGS) $< -o $@
 
 install_deps:
-	@$(MISC_DIR)/install_deps.sh
+	@$(SCRIPTS_DIR)/install_deps.sh
 
 #
 # Builds the cross-tools
 #
 build_toolchain:
-	@if [ ! -d $$HOME/opt/cross_jaos/i686-elf ]; then	\
-		echo "Installing toolchain..."	; \
-		make clean_toolchain toolchain	; \
-		fi
-		@echo "Toolchain already installed, proceeding..."
+	@if [ ! -d $$HOME/opt/cross_jaos/x86_64-elf ]; then \
+		echo "Installing toolchain..."; \
+		make clean_toolchain toolchain; \
+	else \
+		echo "Toolchain already installed, proceeding..."; \
+	fi
 
-run: clean $(HDD_IMG)
-	@$(MISC_DIR)/run_qemu.sh virtio
+build: clean install_deps build_toolchain all
+
+run: clean $(DISK_IMG)
+	@$(SCRIPTS_DIR)/run_qemu.sh 
 
 #
 # Debug with GDB
 #
-run_d: $(HDD_IMG)
-	@$(MISC_DIR)/run_qemu.sh virtio debug
+run_d: $(DISK_IMG)
+	@$(SCRIPTS_DIR)/run_qemu.sh debug
 
 clean:
 	@echo "Cleaning build folder"

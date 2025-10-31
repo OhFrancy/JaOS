@@ -1,0 +1,247 @@
+/*
+ * Implementation of the ATA driver, PIO mode.
+ *
+ * 	Copyright (c) 2025 Francesco Lauro. All rights reserved.
+ * 	SPDX-License-Identifier: MIT
+ *
+ */
+
+#include <stdio.h>
+#include <sys.h>
+#include <log.h>
+#include <errno.h>
+#include <drivers/ata.h>
+#include <asm/io.h>
+
+#define SECTOR_SIZE 512
+
+#define GB_DIV 1000000000
+#define MB_DIV 1000000
+#define KB_DIV 1000
+#define SIZE_DIV(x,y) (x / y)
+
+#define ATA_PRIMARY   0
+#define ATA_SECONDARY 1
+
+#define ATA_DEVICE0		0xA0
+#define ATA_DEVICE1		0xB0
+#define ATA_PRIMARY_IO	 	0x1F0
+#define ATA_SECONDARY_IO 	0x170
+#define ATA_CNTRL_PRIMARY	0x3F6
+#define ATA_CNTRL_SECONDARY	0x376
+
+#define IDENTIFY		0xEC
+
+enum ATARegisterBits
+{
+	ATA_SR_ERR = (1 << 0),  
+	ATA_SR_DRQ = (1 << 3),	// Set when drive has PIO data to transfer or is ready to accept PIO data
+	ATA_SR_BSY = (1 << 7),	// Indicates if the drive is ready to receive/send data (bit 7)
+};
+
+enum ATAbRegistersOffset
+{
+	// I/O
+	DATA      	= 0,
+	ERR        	= 1,	// R
+	FEATURES   	= 1,	// W
+	SECTOR_CNT 	= 2,
+	LBA_LOW		= 3,
+	LBA_MID	   	= 4,
+	LBA_HIGH	= 5,
+	DRIVE_SELECT	= 6,
+	STATUS		= 7,	// R
+	COMMAND		= 7,	// W
+
+	// Control
+	ALTERNATE_SR	= 0,
+	DEVICE_CNTRL	= 0,	// W
+	DRIVE_ADDR	= 1,	// R
+};
+
+typedef struct {
+	double size_bytes;
+	uint16_t bus_io;
+	uint16_t data_bfr[256];
+	uint8_t device;
+	bool is_online;
+	bool is_ata;
+	bool exists;
+} ata_devinfo_t;
+
+static void io_wait_400n();
+static int ata_parse_data(ata_devinfo_t ata_devices[]);
+static int ata_identify(ata_devinfo_t *ata_device);
+static int ata_is_floating(uint16_t bus_io); 
+
+int ata_init()  
+{
+	int errno;
+	ata_devinfo_t ata_devices[4];
+
+	printf("Scanning ATA connections...\n", GRAY);
+
+	// we first do a small floating check, just to get extra info
+	if (ata_is_floating(ATA_PRIMARY_IO))
+		klog(INFO, "ATA", "bus 0 seems to be floating.\n");
+	if (ata_is_floating(ATA_SECONDARY_IO))
+		klog(INFO, "ATA", "bus 1 seems to be floating.\n");
+
+	// fills the structs
+	for (int i = 0; i < 2; ++i) {
+		ata_devices[i].device = i;
+		ata_devices[i].exists = false;
+		ata_devices[i].bus_io = ATA_PRIMARY_IO; 
+		ata_devices[i].is_online = false;
+		ata_devices[i].is_ata = false;
+	}
+	for (int i = 0; i < 2; ++i) {
+		ata_devices[i + 2].device = i;
+		ata_devices[i + 2].exists = false;
+		ata_devices[i + 2].bus_io = ATA_SECONDARY_IO;
+		ata_devices[i + 2].is_online = false;
+		ata_devices[i + 2].is_ata = false;
+	}
+	
+	// fill each device with info, we will then parse it and print it later
+	for (int i = 0; i < 4; ++i) {
+		errno = ata_identify(&ata_devices[i]);
+		if (errno < 0) {
+			klog(ERROR, "ATA", "Identifying error DEVICE%d: %s", i, strerror(errno));
+		}
+	}
+
+	// if function fails, it means that no valid drive was found
+	errno = ata_parse_data(ata_devices);
+	if (errno < 0) {
+		return -ENODEV;
+	}
+	io_wait_400n();
+	return SUCCESS;
+}
+
+static int ata_parse_data(ata_devinfo_t ata_devices[])
+{
+	if (!ata_devices)
+		return -EINVAL;
+
+	int errno;
+	for (int i = 0; i < 4; ++i) {
+		// if it doesn't exist we don't need to check anything else, we can just go to the next drive
+		if (!ata_devices[i].exists) {
+			klog(INFO, "ATA", "Drive %d doesn't exist.\n", i);
+			errno = ENODEV;
+			continue;
+		} else {
+			klog(INFO, "ATA", "Drive %d found.\n", i);
+			errno = SUCCESS;
+		}
+
+		// check if the found drive is ATA, if not we continue
+		if (!ata_devices[i].is_ata) {
+			klog(INFO, "ATA", "Drive %d is not ATA.\n", i);
+			errno = ENODEV;
+			continue;
+		} else {
+			errno = SUCCESS;
+		}
+		
+		// check if drive is online, if not we continue
+		if (!ata_devices[i].is_online) {
+			klog(INFO, "ATA", "Drive is not online.\n", i);
+			errno = ENODEV;
+			continue;
+		} else {
+			errno = SUCCESS;
+		}	
+		
+		// if the drive was detected online, we can parse the 256, 16 bits data we got from identify into actual readable info
+		uint32_t logical_sectors = ata_devices[i].data_bfr[60] | (ata_devices[i].data_bfr[61] << 16);
+		ata_devices[i].size_bytes = (double)(logical_sectors * SECTOR_SIZE);
+
+		uint32_t converted_size;
+		// we try to convert the size to the most readable format, only using multiples so that they are not 0.x, (I.E., we can't get 0.5GB, only 500MB)
+		if ((converted_size = SIZE_DIV(ata_devices[i].size_bytes, GB_DIV)) >= 1)
+			printf("\t--> Size: %dGB\n", GRAY, converted_size);
+		else if ((converted_size = SIZE_DIV(ata_devices[i].size_bytes, MB_DIV)) >= 1)
+			printf("\t--> Size: %dMB\n", GRAY, converted_size);
+		
+		ata_devices[i].data_bfr[0] |= (1 << 15);
+		printf("%d", GRAY, ata_devices[i].data_bfr[0] & (1 << 15));
+		printf("\n", GRAY);
+	}
+	return errno;
+}
+
+/*
+ * Identifying procedure through IDENTIFY command 
+ * fills each given struct with info about its device, if the device is not online, data_bfr should not be read
+ */
+static int ata_identify(ata_devinfo_t *ata_device)
+{
+	if (!ata_device) 
+		return -EINVAL;
+	
+	uint16_t bus_io = ata_device->bus_io;
+	uint8_t device = ata_device->device;
+
+	outb(bus_io + DRIVE_SELECT, 0xA0 | (device << 4));
+	// we send 0 to sector count, LBAlo, LBAmi and LBAhi to prepare for the identify commad
+	outb(bus_io + SECTOR_CNT, 0);
+	outb(bus_io + LBA_LOW, 0);
+	outb(bus_io + LBA_MID, 0);
+	outb(bus_io + LBA_HIGH, 0);
+
+	// now we're ready to send the identify command to the command port on the current bus
+	outb(bus_io + COMMAND, IDENTIFY);
+	
+	// if after reading the register, the value is 0, the drive does not exist
+	int status = inb(bus_io + STATUS);
+	if (status == 0)
+		return SUCCESS;
+
+	// for any other value, the drive exists
+	ata_device->exists = true;
+
+	// we start polling the status port till BSY (b7) is clear
+	while ((inb(bus_io + STATUS) & ATA_SR_BSY) != 0);
+	
+	// if LBA mid and LBA high are not zero, the drive is not ATA
+	if (inb(bus_io + LBA_MID) != 0 && inb(bus_io + LBA_HIGH) != 0) {
+		ata_device->is_ata = false;
+		return SUCCESS;
+	}
+	ata_device->is_ata = true;
+	
+	// we'll poll till the ATA is ready to transfer data, if it errors while polling, we exit
+	while ((inb(bus_io + STATUS) & ATA_SR_DRQ) == 0) {
+		if ((inb(bus_io + STATUS) & ATA_SR_ERR) != 0)
+			ata_device->is_online = false;
+	}
+	ata_device->is_online = true;
+
+	// we're ready to read 16 bits for 256 times, from the DATA port
+	for (int i = 0; i < 256; ++i) {
+		ata_device->data_bfr[i] = inw(bus_io + DATA);
+	}
+	return SUCCESS; 
+	
+}
+
+/*
+ * 0xFF, 0x0, 0x7F, all indicate a seemingly floating bus 
+ */
+static int ata_is_floating(uint16_t bus) 
+{	
+	uint8_t status = inb(bus + STATUS);
+	return (status == 0xFF || status == 0x7F);
+}
+
+// wait ~400 nanoseconds
+static void io_wait_400n()
+{
+	inb(ATA_CNTRL_PRIMARY);
+	inb(ATA_CNTRL_PRIMARY);
+	inb(ATA_CNTRL_PRIMARY);
+	inb(ATA_CNTRL_PRIMARY);
+}

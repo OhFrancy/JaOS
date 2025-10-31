@@ -8,10 +8,11 @@
 
 #include <drivers/vga.h>
 #include <asm/io.h>
+#include <string.h>
 
 static volatile uint8_t *video = VGA_PTR;
 
-void init_video(uint8_t col)
+void video_init(uint8_t col)
 {
 	move_cursor(0, 0);
 	for (int i = 0; i < VGA_W * VGA_L; ++i) {
@@ -20,6 +21,34 @@ void init_video(uint8_t col)
      	move_cursor(0, 0);
 }
 
+void scroll_down()
+{
+	video = VGA_PTR;
+	
+    int bytes_per_line = VGA_W * 2;
+    int lines_to_move = VGA_L - 1;
+
+    void *source = (void *)(VGA_PTR + VGA_W);
+
+    void *destination = (void *)VGA_PTR;
+
+    // Total bytes to copy
+    int total_bytes = lines_to_move * bytes_per_line;
+
+    // Use memcpy to perform the block copy. This is much faster than a loop.
+    memcpy(destination, source, total_bytes);
+
+
+    int last_line_offset = (VGA_L - 1) * VGA_W;
+    uint16_t blank_char = 0x20 | (WHITE << 8); // Space character with white-on-black color
+
+    for (int i = 0; i < VGA_W; i++) {
+        VGA_PTR[last_line_offset + i] = blank_char;
+    }
+
+    // Update the hardware cursor to reflect the new position
+    move_cursor(0, get_cursor_y(get_cursor_pos()) -1 );
+}
 
 void print_char(unsigned char ch, uint8_t colour)
 {
@@ -27,6 +56,8 @@ void print_char(unsigned char ch, uint8_t colour)
      	video = VGA_PTR + (curr_pos * 2);
 	
 	if (ch == '\n') {
+		if (get_cursor_y(curr_pos) + 1 >= VGA_L)
+			scroll_down();
 		move_cursor(0, get_cursor_y(curr_pos) + 1);
 	}
 	if (ch == '\t') {
