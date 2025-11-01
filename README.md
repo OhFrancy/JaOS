@@ -3,7 +3,7 @@
 [![Lines of Code][tokei-url]][repo-url]
 
 <div>
-<h1 align="center">JaOS</h1>
+<h1 align="center">Helion</h1>
 
   <p align="center">
     Hobby operating system, written mainly in C
@@ -14,7 +14,7 @@
   <summary>Table of contents</summary>
   <ol>
     <li>
-      <a href="#about">About JaOS</a>
+      <a href="#about">About Helion</a>
     </li>
     <li><a href="#requisites">Requisites</a></li>
     <li><a href="#installation">Build and Installation</a></li>
@@ -27,7 +27,7 @@
 ## The Project
 <a name="about"></a>
 
-**JaOS is a hobby operating system**, in really early development, developed using C and ASMx86. The Operating System is far from being ready to use for any real-life purpose.
+**Helion is a hobby operating system**, in really early development, developed using C and ASMx86. The Operating System is far from being ready to use for any real-life purpose.
 
 For supported OS and Distributions, please check **<a href="#compatibility">Compatibility</a>**.
 
@@ -45,11 +45,11 @@ Every dependency requirement will try to be handled through scripts, be aware th
 
 To get started, you must clone and cd into the repository through git, either with **HTTPS**:
 ```
-git clone https://github.com/OhFrancy/JaOS.git && cd JaOS
+git clone https://github.com/OhFrancy/Helion.git && cd Helion
 ```
 or **SSH**:
 ```
-git clone git@github.com:OhFrancy/JaOS.git && cd JaOS
+git clone git@github.com:OhFrancy/Helion.git && cd Helion
 ```
 (Alternatively you can download it through your browser and cd into it).
 
@@ -63,7 +63,7 @@ I can't list all packet managers here, so please, search for yours online.
 ### Build & Installation
 <a name="installation"></a>
 
-To build **JaOS** you must simply run:
+To build **Helion** you must simply run:
 ```
 make build
 ```
@@ -84,7 +84,7 @@ If the error persists, you can open a **Github Issue** and report it.
 
 <p align="right">(<a href="#readme-top">top</a>)</p>
 
-## JaOS Roadmap
+## Helion Roadmap
 <a name="roadmap"></a>
 
 **Multi-stage bootloader**
@@ -118,7 +118,7 @@ Any contribution you make is **really appreciated**, just make sure you know wha
 
 ## Compatibility
 <a name="compatibility"></a>
-**JaOS** currently only supports **Linux distributions**.
+**Helion** currently only supports **Linux distributions**.
 
 It does **NOT** support **Windows** and **MacOS** for the development build installation process, and I don't think it'll ever support them.
 
@@ -132,6 +132,6 @@ Here is a list of currently known supported Linux distributions:
 Distributed under the MIT License. [LICENSE](LICENSE) for more info.
 
 <!-- IMAGES & LINKS -->
-[tokei-url]: https://tokei.rs/b1/github/OhFrancy/JaOS?style=for-the-badge
-[repo-url]: https://github.com/OhFrancy/JaOS
+[tokei-url]: https://tokei.rs/b1/github/OhFrancy/Helion?style=for-the-badge
+[repo-url]: https://github.com/OhFrancy/Helion
 
